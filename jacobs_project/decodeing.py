@@ -3,14 +3,14 @@ import struct, socket,math
 from copy import copy
  
 
-class ParserUtils(object):
-
+class Parser(object):
+ 
     def __init__(self):
         self.version = (0, 0)   
         self._dataqueue = bytes() 
         self.host = "192.168.0.2" 
         secondary_port = 30002  #Secondary client interface on Universal Robots
-        self._s_secondary = socket.create_connection((self.host, secondary_port), timeout=0.5)  
+        self._s_secondary = socket.create_connection((self.host, secondary_port), timeout=0.5)  # the timeout gives a chance to stop the thread
     
     def parse(self, data):
             """
@@ -211,7 +211,7 @@ class ParserUtils(object):
 
 
 if __name__ == '__main__' :
-    program=ParserUtils() 
+    program=Parser() 
     all_data=program.parse(program._get_packge())    
     print(all_data)
 

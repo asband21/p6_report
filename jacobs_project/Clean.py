@@ -58,27 +58,27 @@ def send_postion(radians):
 if __name__ == "__main__":  
     
     # Connection to the UR robot usning TCP commucation 
-    #ip = '192.168.0.2'   
-    #port = 30001 
-    #tcp_connection=socket.socket(socket.AF_INET,socket.SOCK_STREAM)   
+    ip = '192.168.0.2'   
+    port = 30002
+    tcp_connection=socket.socket(socket.AF_INET,socket.SOCK_STREAM)   
 
-    #tcp_connection.connect((ip,port))         
-    test=ParserUtils
-    print(test.all_data)
+    tcp_connection.connect((ip,port))         
+    #test=ParserUtils
+    #print(test.all_data)
     
       
     
-    """ 
-    target_degree = ([-38.35,-77.38,-101.13,-91.3,90,-38.36])#[-65.48, -90, -82.66, -98.32, 90, 24.48])  
+    
+    target_degree = ([-38.35,-77.38,-101.13,-91.3,90,-38.36])
     target_radian = degrees_to_radians(target_degree)
     
-    tcp(send_postion(target_degree),tcp_connection)
+    tcp(send_postion((target_degree),tcp_connection))
     time.sleep(0.3)   
   
     print("target degree = ",target_degree)
     print("target_radian = ",target_radian)
     print("brack")   
-    """
+
         
         
       
