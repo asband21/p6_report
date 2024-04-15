@@ -1,6 +1,7 @@
 import pyrealsense2 as rs
 import numpy as np
 
+# Function to get the real-world coordinates xy of a point in the image
 def point_cloud(coordiantes): 
         
     # Configure depth and color streams
@@ -29,19 +30,17 @@ def point_cloud(coordiantes):
     # Calculate real-world distances
     depth_in_meters = depth_image * depth_scale
 
-    # Define pixel coordinates (example)
-
-
     # Map pixel coordinates to real-world coordinates
     depth_value = depth_in_meters[coordiantes[1], coordiantes[0]]  # coordinates are in (y, x) format
     Real_world_coordinates = rs.rs2_deproject_pixel_to_point(depth_intrinsics, [coordiantes[0], coordiantes[1]], depth_value)
 
-    # Print real-world coordinates
-    #print("Real-world coordinates (x, y, z):", Real_world_coordinates) 
-    return Real_world_coordinates
-
-    # Release resources
+ 
+    #print("Real-world coordinates (x, y, z):", Real_world_coordinates)   
     pipeline.stop()  
+    return Real_world_coordinates 
+    # Release resources
+
+   
     
 
 
