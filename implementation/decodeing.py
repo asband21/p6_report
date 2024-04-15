@@ -107,7 +107,10 @@ class Parser(object):
             fmt is struct format, but with added A for arrays and no support for numerical in fmt
             names args are strings used to store values
         """ 
-        tmpdata = copy(data)
+        #tmpdata = copy(data) 
+        
+        # Copy data has been removed, if enabled it would create a copy of the data, which is not needed.
+        tmpdata = data
         fmt = fmt.strip()  # space may confuse us
         d = dict()
         i = 0
@@ -208,13 +211,11 @@ class Parser(object):
                 self._dataqueue += tmp 
                 
  
-
+program=Parser() 
+all_data=program.parse(program._get_packge())    
 
 if __name__ == '__main__' :
-    program=Parser() 
-    all_data=program.parse(program._get_packge())    
     print(all_data)
-
     if False: 
         joints = all_data['JointData']
         print(joints)
