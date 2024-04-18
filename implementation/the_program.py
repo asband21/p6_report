@@ -21,11 +21,11 @@ def transformation(x_tcp, y_tcp, z_tcp,Rx_tcp,Ry_tcp,Rz_tcp,real_coordinates):
     #T = np.array([[np.cos(Ry_tcp)*np.cos(Rz_tcp), np.cos(Rz_tcp)*np.sin(Rx_tcp)*np.sin(Ry_tcp)-np.cos(Rx_tcp)*np.sin(Rz_tcp), np.cos(Rx_tcp)*np.cos(Rz_tcp)*np.sin(Ry_tcp)+np.sin(Rx_tcp)*np.sin(Rz_tcp), x_tcp+0.035], [np.cos(Ry_tcp)*np.sin(Rz_tcp), np.cos(Rx_tcp)*np.cos(Rz_tcp)+np.sin(Rx_tcp)*np.sin(Ry_tcp)*np.sin(Rz_tcp), np.cos(Rx_tcp)*np.sin(Ry_tcp)*np.sin(Rz_tcp)-np.cos(Rz_tcp)*np.sin(Rx_tcp), y_tcp+0.105], [-np.sin(Ry_tcp), np.cos(Ry_tcp)*np.sin(Rx_tcp), np.cos(Rx_tcp)*np.cos(Ry_tcp), z_tcp-0.38], [0.0, 0.0, 0.0, 1.0]])
     
     #without orientation
-    T = np.array([[0.0, 0.0, 0.0, x_tcp+0.035], [0.0, 0.0, 0.0, y_tcp+0.105], [0.0, 0.0, 0.0, z_tcp-0.38], [0.0, 0.0, 0.0, 1.0]]) 
-    
+    T = np.array([[1, 0.0, 0.0, x_tcp], [0.0, 1, 0, y_tcp], [0.0, 0.0, 1, z_tcp], [0.0, 0.0, 0.0, 1.0]]) 
+    off_set =  np.array([1,0,0,0.035],[0,1,0,0.105],[0,0,1,-0.38],[0,0,0,1]) 
+    T_off = T @ off_set
     # The transformation matrix from the robot base frame to the camera frame
-    T_inv = np.linalg.inv(T) 
-    
+    T_inv = np.linalg.inv(T_off) 
     # The real world coordinates in the robot base frame
     real_coordinates_robot_base = np.dot(T_inv, real_coordinates) 
     
