@@ -27,7 +27,7 @@ depth_profile = rs.video_stream_profile(profile.get_stream(rs.stream.depth))
 depth_intrinsics = depth_profile.get_intrinsics()
 
 # Get camera intrinsics
-print(" depth scale : %s" %depth_scale)
+#print(" depth scale : %s" %depth_scale)
 
 # Streaming loop 
 def real_world_coordinates(pixels_coordinates):
@@ -43,21 +43,24 @@ def real_world_coordinates(pixels_coordinates):
     color_frame =aligned_frames.get_color_frame()
     
     # Extraxting depth and color images from frames
-    depth_image = np.array(depth_frame.get_data()) 
-    color_image = np.array(color_frame.get_data()) 
+    depth_image = np.array(depth_frame.get_data())  
+
+    # color_image = np.array(color_frame.get_data())  
+
     depth = depth_image.astype(float) 
-    
-    #center of the camera - coordinates xy 
-    center_kamera = pixels_coordinates
-    center_kamera = [int(color_image.shape[0]/2), int(color_image.shape[1]/2)]
-    
+
+    #center of the camera - coordinates xy  
+
     # two types of depth calculation, in the center of the camera's resolution
-    distance = depth_image[center_kamera] * depth_scale    
-    distance2 = depth_frame.get_distance(center_kamera[0], center_kamera[1]) 
+    distance_image = depth_image * depth_scale # distance is too large for the rs2_deproject_pixel_to_point function as distance gives a hugh image insted of one  depth in the deisred pixel   
     
+    distance_toPoint = depth_frame.get_distance(pixels_coordinates[1], pixels_coordinates[0]) 
+    #print(distance_image[pixels_coordinates[1], pixels_coordinates[0]])
+
     # Map pixel coordinates to real-world coordinates
-    depth_value = distance  # coordinates are in (y, x) format
-    Real_world_coordinates = rs.rs2_deproject_pixel_to_point(depth_intrinsics, [center_kamera[0], center_kamera[1]], depth_value)
-    print("Real-world coordinates (x, y, z):", Real_world_coordinates) 
-    return Real_world_coordinates
-            
+    Real_coordinates = rs.rs2_deproject_pixel_to_point(depth_intrinsics, [pixels_coordinates[0], pixels_coordinates[1]], distance_toPoint  )
+    return Real_coordinates
+
+if __name__ == '__main__':
+    print("Real-world coordinates (x, y, z):", real_world_coordinates([640,360]))  
+   

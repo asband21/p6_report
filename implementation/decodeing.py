@@ -1,7 +1,7 @@
 
 import struct, socket,math
 from copy import copy
- 
+from time import sleep
 
 class Parser(object):
  
@@ -206,13 +206,20 @@ class Parser(object):
                 # self.logger.debug("found packet of size {}".format(len(ans[0])))
                 return ans[0]
             else:
-                # self.logger.debug("Could not find packet in received data")
-                tmp = self._s_secondary.recv(1024)
-                self._dataqueue += tmp 
+                # self.logger.debug("Could not find packet in received data")  
+                tmp = self._s_secondary.recv(1024)  
+                self._dataqueue += tmp  
+                   
+                
+                
+                   
                 
  
 program=Parser() 
+
 all_data=program.parse(program._get_packge())    
+
+
 
 if __name__ == '__main__' :
     print(all_data)

@@ -1,7 +1,7 @@
 import numpy as np
 
 from decodeing import all_data 
-from camera_data import real_world_coordinates  
+from camera_data import real_world_coordinates
 
 def info_extraction() :  
     # Get the joint postion data from the UR Robot, starting from base(q_actual0) to the sixth joint(q_actual5)
@@ -22,18 +22,22 @@ def transformation(x_tcp, y_tcp, z_tcp,Rx_tcp,Ry_tcp,Rz_tcp,real_coordinates):
     
     #without orientation
     T = np.array([[1, 0.0, 0.0, x_tcp], [0.0, 1, 0, y_tcp], [0.0, 0.0, 1, z_tcp], [0.0, 0.0, 0.0, 1.0]]) 
-    off_set =  np.array([1,0,0,0.035],[0,1,0,0.105],[0,0,1,-0.38],[0,0,0,1]) 
-    T_off = T @ off_set
+    off_set = np.array([[1,0,0,0.035],[0,1,0,0.105],[0,0,1,-0.38],[0,0,0,1]]) 
+    T_off = T @ off_set 
+
+    real_coordinates_matrix = np.array([[1,0,0,real_coordinates[0]],[0,1,0,real_coordinates[1]],[0,0,1,real_coordinates[2]],[0,0,0,1]]) 
     # The transformation matrix from the robot base frame to the camera frame
     T_inv = np.linalg.inv(T_off) 
     # The real world coordinates in the robot base frame
-    real_coordinates_robot_base = np.dot(T_inv, real_coordinates) 
+    real_coordinates_robot_base = np.dot(T_inv, real_coordinates_matrix) 
     
     return real_coordinates_robot_base
 
 
-# From the camera, finds the real world coordiates of the center of the camera 
+# From the camera, finds the real world coordiates of the center of the camera  
 joint_postion,x_tcp,y_tcp,z_tcp,Rx_tcp,Ry_tcp,Rz_tcp=info_extraction()
-real_coordinates = real_world_coordinates() 
+real_coordinates = real_world_coordinates([360,620])
 real_coordinates_robot_base = transformation(x_tcp, y_tcp, z_tcp,Rx_tcp,Ry_tcp,Rz_tcp,real_coordinates) 
-print(real_coordinates_robot_base)
+print(real_coordinates_robot_base)  
+
+#[360, 640]
