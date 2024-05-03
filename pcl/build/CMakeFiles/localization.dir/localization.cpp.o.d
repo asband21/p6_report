@@ -1,6 +1,6 @@
-CMakeFiles/pcd_write.dir/pcd_write.cpp.o: \
- /home/klyx/git/p6/prosjekt/pcl/pcd_write.cpp /usr/include/stdc-predef.h \
- /usr/include/c++/11/iostream \
+CMakeFiles/localization.dir/localization.cpp.o: \
+ /home/klyx/git/p6/prosjekt/pcl/localization.cpp \
+ /usr/include/stdc-predef.h /usr/include/c++/11/iostream \
  /usr/include/x86_64-linux-gnu/c++/11/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/11/bits/os_defines.h \
  /usr/include/features.h /usr/include/features-time64.h \

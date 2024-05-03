@@ -8,7 +8,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/home/klyx/git/p6/prosjekt/pcl/pcd_write.cpp" "CMakeFiles/pcd_write.dir/pcd_write.cpp.o" "gcc" "CMakeFiles/pcd_write.dir/pcd_write.cpp.o.d"
+  "/home/klyx/git/p6/prosjekt/pcl/localization.cpp" "CMakeFiles/localization.dir/localization.cpp.o" "gcc" "CMakeFiles/localization.dir/localization.cpp.o.d"
   )
 
 # Targets to which this target links.

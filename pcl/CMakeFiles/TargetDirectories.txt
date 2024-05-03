@@ -1,3 +1,0 @@
-/home/klyx/git/p6/prosjekt/pcl/CMakeFiles/pcd_write.dir
-/home/klyx/git/p6/prosjekt/pcl/CMakeFiles/edit_cache.dir
-/home/klyx/git/p6/prosjekt/pcl/CMakeFiles/rebuild_cache.dir

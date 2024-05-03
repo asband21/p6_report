@@ -1,0 +1,3 @@
+/home/klyx/git/p6/prosjekt/pcl/build/CMakeFiles/localization.dir
+/home/klyx/git/p6/prosjekt/pcl/build/CMakeFiles/edit_cache.dir
+/home/klyx/git/p6/prosjekt/pcl/build/CMakeFiles/rebuild_cache.dir

@@ -4,7 +4,6 @@
 
 int main ()
 {
-
 	pcl::PointCloud<pcl::PointXYZ> cloud;
 	// Fill in the cloud data
 	cloud.width    = 5;

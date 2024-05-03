@@ -60,7 +60,7 @@ EQUALS = =
 CMAKE_SOURCE_DIR = /home/klyx/git/p6/prosjekt/pcl
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/klyx/git/p6/prosjekt/pcl
+CMAKE_BINARY_DIR = /home/klyx/git/p6/prosjekt/pcl/build
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,9 +87,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/klyx/git/p6/prosjekt/pcl/CMakeFiles /home/klyx/git/p6/prosjekt/pcl//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/klyx/git/p6/prosjekt/pcl/build/CMakeFiles /home/klyx/git/p6/prosjekt/pcl/build//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/klyx/git/p6/prosjekt/pcl/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/klyx/git/p6/prosjekt/pcl/build/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -117,41 +117,41 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named pcd_write
+# Target rules for targets named localization
 
 # Build rule for target.
-pcd_write: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 pcd_write
-.PHONY : pcd_write
+localization: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 localization
+.PHONY : localization
 
 # fast build rule for target.
-pcd_write/fast:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/pcd_write.dir/build.make CMakeFiles/pcd_write.dir/build
-.PHONY : pcd_write/fast
+localization/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/localization.dir/build.make CMakeFiles/localization.dir/build
+.PHONY : localization/fast
 
-pcd_write.o: pcd_write.cpp.o
-.PHONY : pcd_write.o
+localization.o: localization.cpp.o
+.PHONY : localization.o
 
 # target to build an object file
-pcd_write.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/pcd_write.dir/build.make CMakeFiles/pcd_write.dir/pcd_write.cpp.o
-.PHONY : pcd_write.cpp.o
+localization.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/localization.dir/build.make CMakeFiles/localization.dir/localization.cpp.o
+.PHONY : localization.cpp.o
 
-pcd_write.i: pcd_write.cpp.i
-.PHONY : pcd_write.i
+localization.i: localization.cpp.i
+.PHONY : localization.i
 
 # target to preprocess a source file
-pcd_write.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/pcd_write.dir/build.make CMakeFiles/pcd_write.dir/pcd_write.cpp.i
-.PHONY : pcd_write.cpp.i
+localization.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/localization.dir/build.make CMakeFiles/localization.dir/localization.cpp.i
+.PHONY : localization.cpp.i
 
-pcd_write.s: pcd_write.cpp.s
-.PHONY : pcd_write.s
+localization.s: localization.cpp.s
+.PHONY : localization.s
 
 # target to generate assembly for a file
-pcd_write.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/pcd_write.dir/build.make CMakeFiles/pcd_write.dir/pcd_write.cpp.s
-.PHONY : pcd_write.cpp.s
+localization.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/localization.dir/build.make CMakeFiles/localization.dir/localization.cpp.s
+.PHONY : localization.cpp.s
 
 # Help Target
 help:
@@ -161,10 +161,10 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... pcd_write"
-	@echo "... pcd_write.o"
-	@echo "... pcd_write.i"
-	@echo "... pcd_write.s"
+	@echo "... localization"
+	@echo "... localization.o"
+	@echo "... localization.i"
+	@echo "... localization.s"
 .PHONY : help
 
 
