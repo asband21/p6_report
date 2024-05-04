@@ -7,7 +7,7 @@ TODO:
 - Find the correct weld seam to the weld obejct in the simulation 
 -  Make a home position for the robot 
 -  Check if the robot can reach the weld object 
--  Make a user operator input  
+-  Make a user operator input , DONE use INPUT FUNCTION
 
 InPROGRESS:  
 - Fixiing update fuction so that it orient the tcp to the weld seam for drag or psuh fuction
@@ -23,8 +23,6 @@ RDK = Robolink()
 
 
 collisions_bool = False  # set to True to enable collision detection, !!! not nessary for simulation !!!
-
-
 
 
 #set the simulation speed
@@ -107,7 +105,7 @@ def  Update(path_settings,robot) :
     """
 
 
-    #input("Press any key to continue...") 
+  
 
     path_settings.setParam("Machining")
     # get the reachable path of the robot
@@ -144,7 +142,7 @@ def COLLISION_check(collisions_bool,program):
         check_collisions = COLLISION_OFF
 
     collions_data=program.Update(check_collisions)
-    collions_precentages=collions_data[3]*100 # print the collision data in precentages of no collision
+    collions_precentages=collions_data[3]*100 # the collision data in precentages of no collision
     return collions_precentages
     
 
@@ -155,7 +153,9 @@ def Main() :
     robot,path_settings,program,target=SetUp() # setup the simulation 
     Update(path_settings,robot) # update the path settings and robot settings
     collions_precentages=COLLISION_check(collisions_bool,program)  # check if the program has any collisions
-    
+
+    #input("Press any key to continue...") # wait for the user to press a key to continue the program
+
     robot.setJoints([0,0,0,0,0,0]) # Home postion of the robot 
 
     if collions_precentages == 100:  
