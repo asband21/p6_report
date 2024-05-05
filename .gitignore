@@ -1,1 +1,7 @@
+#pcl byg
 pcl/build/
+./pcl/build/
+pcl/build/*
+./pcl/build/*
+pcl/build
+./pcl/build
