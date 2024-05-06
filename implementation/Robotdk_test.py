@@ -15,7 +15,8 @@ InPROGRESS:
 """
 
 from robolink import *  # Import the RoboDK API
-from robodk import *    # Import the RoboDK API constants
+from robodk import *    # Import the RoboDK API constants 
+from robodk.robomath import PosePP as p
 import time
 # Start RoboDK 
 RDK = Robolink()
@@ -47,7 +48,8 @@ def SetUp():
     robot.setSpeed(0.00000001) # Set the speed of the robot to 100 mm/s
     time.sleep(2) 
     RDK.Render(True) # render the simulation
-    RDK.setSimulationSpeed(1) # set the simulation speed to 100%
+    RDK.setSimulationSpeed(1) # set the simulation speed to 100% 
+    robot.setParam("ShowWorkspace",2) # Work space of the robot given from the TCP 
     # Data from the simulation  
     return robot,path_settings,program,target
 
@@ -76,7 +78,7 @@ def  Update(path_settings,robot,program,target) :
         "RapidApproachRetract": 1,
         "RotZ_Range": 180,
         "RotZ_Step": 20,
-        "SpeedOperation": 500,
+        "SpeedOperation": 50,
         "SpeedRapid": 1000,
         "TrackActive": 1,
         "TrackOffset": 1,
@@ -112,7 +114,7 @@ def  Update(path_settings,robot,program,target) :
     new_settings =path_settings.setParam("Machining",Update_pathsettings) # set the speed of the robot to 100 mm/s 
     update_status=path_settings.setParam("UpdatePath")   
     #progevents = path_settings.setParam("ProgEvents")  
-    test=robot.setParam("ShowWorkspace",2) # Work space of the robot given from the TCP 
+    
     # Update the path settings  
     #test=robot.setParam("Machining") # set the collision check to true 
     #target.Update()
@@ -150,33 +152,35 @@ def Main() :
     """  
     The main function of the program, this function is used to run the simulation and the program 
     """
-    robot,path_settings,program,target=SetUp() # setup the simulation  
-    robot.setJoints([0,0,0,0,0,0])  
-    input("Press any key to continue...") # wait for the user to press a key to continue the program 
-    Update(path_settings,robot,program,target) # update the path settings and robot settings
-    collions_precentages=COLLISION_check(collisions_bool,program)  # check if the program has any collisions
-    
-    
-    # Home postion of the robot  
-    
-    #robot.setSpeed(0.001) # set the speed of the robot to 100 mm/s
-    
-    #print(target.Pose())
-    #robot.MoveJ(target.Pose()) # move the robot to the home position
-    #robot.MoveJ(target.Pose()) # move the robot to the home position
-    if collions_precentages == 100:  
-        print("The program is collision free" )  
-        # runing the program "Main"  
-        # set the robot joints to zero
-        RDK.RunProgram("Main", True) # Run the program "Main" until the end, switch true with False if you want the program stop before the program is finished
+    robot,path_settings,program,target=SetUp() # setup the simulation 
+    try:   
+        robot.setJoints([-90.000000, 0, -150, 0.000000, -90.000000, 0.000000]) 
+        
+        target.setPose(p(967.629,524.114,15.000,0,0,0.00)) # set the target to new coordinates given from the camera
 
-    else: 
-        print("Warning: The program has a collision risk of %s precentages " % (100-collions_precentages))  
-        program.Stop() 
+        input("Press any key to continue...") # wait for the user to press a key to continue the program 
+        
+        Update(path_settings,robot,program,target) # update the path settings and robot settings
+        collions_precentages=COLLISION_check(collisions_bool,program) # check if the program has any collisions
+        Update(path_settings,robot,program,target) 
+        robot.setSpeed(0.001) # set the speed of the robot to 100 mm/s
+        robot.MoveJ(target.Pose()) # move the robot to the home position
+     
+        
+        
+        if collions_precentages == 100:  
+            print("The program is collision free" )  
+            # runing the program "Main"  
+            # set the robot joints to zero
+            RDK.RunProgram("Main", True) # Run the program "Main" until the end, switch true with False if you want the program stop before the program is finished
 
-    if True:  
-        RDK.CloseRoboDK() 
+        else: 
+            print("Warning: The program has a collision risk of %s precentages " % (100-collions_precentages))  
+            program.Stop() 
 
+    finally: 
+        print("The program is finished") 
+        RDK.CloseRoboDK()
 Main() 
 
 
