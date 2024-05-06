@@ -34,25 +34,25 @@ def SetUp():
     station = RDK.AddFile(station_path)   
     robot = RDK.Item('', ITEM_TYPE_ROBOT) # if the robot is not provided, the first available robot is used  
     path_settings = RDK.Item('Placement(Update)', ITEM_TYPE_MACHINING) # get the path settings from the simulation
-    target = RDK.Item('WeldItem',ITEM_TYPE_TARGET)   
-    frame = RDK.Item('GlobalFrame',ITEM_TYPE_FRAME) 
+    target = RDK.Item('WeldItemFrame',ITEM_TYPE_FRAME)   
+    Global_frame = RDK.Item('GlobalFrame',ITEM_TYPE_FRAME) 
     program = RDK.Item('Main',ITEM_TYPE_PROGRAM)  
 
     #target = RDK.Item()
     tcp = RDK.Item('Torch2',ITEM_TYPE_TOOL)  
 
     # Set the robot at the global frame , have to tjek if correct
-    robot.setPoseFrame(frame) 
+    robot.setPoseFrame(Global_frame) 
     robot.setPoseTool(tcp) 
-    robot.setSpeed(1) # Set the speed of the robot to 100 mm/s
+    robot.setSpeed(0.00000001) # Set the speed of the robot to 100 mm/s
     time.sleep(2) 
-    RDK.Render(False)
+    RDK.Render(True) # render the simulation
     RDK.setSimulationSpeed(1) # set the simulation speed to 100%
     # Data from the simulation  
     return robot,path_settings,program,target
 
 
-def  Update(path_settings,robot) : 
+def  Update(path_settings,robot,program,target) : 
     Update_pathsettings= {}   
     Update_pathsettings = {
         "Algorithm": 1,  # 0: minimum tool orientation change, 1: tool orientation follows path
@@ -76,7 +76,7 @@ def  Update(path_settings,robot) :
         "RapidApproachRetract": 1,
         "RotZ_Range": 180,
         "RotZ_Step": 20,
-        "SpeedOperation": 50,
+        "SpeedOperation": 500,
         "SpeedRapid": 1000,
         "TrackActive": 1,
         "TrackOffset": 1,
@@ -112,12 +112,12 @@ def  Update(path_settings,robot) :
     new_settings =path_settings.setParam("Machining",Update_pathsettings) # set the speed of the robot to 100 mm/s 
     update_status=path_settings.setParam("UpdatePath")   
     #progevents = path_settings.setParam("ProgEvents")  
-    robot.setParam("ShowWorkspace",0)
+    test=robot.setParam("ShowWorkspace",2) # Work space of the robot given from the TCP 
     # Update the path settings  
-    #test=robot.setParam("Machining") # set the collision check to true
+    #test=robot.setParam("Machining") # set the collision check to true 
+    #target.Update()
     path_settings.Update()
-
-
+  
     """  
     print(robot.Name())
     print("Simulations speed : %s " % RDK.SimulationSpeed())       
@@ -150,14 +150,20 @@ def Main() :
     """  
     The main function of the program, this function is used to run the simulation and the program 
     """
-    robot,path_settings,program,target=SetUp() # setup the simulation 
-    Update(path_settings,robot) # update the path settings and robot settings
+    robot,path_settings,program,target=SetUp() # setup the simulation  
+    robot.setJoints([0,0,0,0,0,0])  
+    input("Press any key to continue...") # wait for the user to press a key to continue the program 
+    Update(path_settings,robot,program,target) # update the path settings and robot settings
     collions_precentages=COLLISION_check(collisions_bool,program)  # check if the program has any collisions
-
-    #input("Press any key to continue...") # wait for the user to press a key to continue the program
-
-    robot.setJoints([0,0,0,0,0,0]) # Home postion of the robot 
-
+    
+    
+    # Home postion of the robot  
+    
+    #robot.setSpeed(0.001) # set the speed of the robot to 100 mm/s
+    
+    #print(target.Pose())
+    #robot.MoveJ(target.Pose()) # move the robot to the home position
+    #robot.MoveJ(target.Pose()) # move the robot to the home position
     if collions_precentages == 100:  
         print("The program is collision free" )  
         # runing the program "Main"  
