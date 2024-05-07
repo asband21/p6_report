@@ -61,9 +61,11 @@ int main()
 	char sti_scan[] = "./skan_RT_pungsky_med_dobbler.csv";
 	*cad_model = load_from_csv(sti_ref);
 	*scan = load_from_csv(sti_scan);
-	printf("kkk");
+	printf("\n-----------\n");
 
 	/*
+	 */
+
 	Eigen::Matrix4f transformation = performICP(scan, cad_model);
 
 	// Optionally visualize the result
@@ -72,8 +74,7 @@ int main()
 	pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> target_color(cad_model, 0, 255, 0);
 	viewer.addPointCloud(scan, source_color, "source");
 	viewer.addPointCloud(cad_model, target_color, "target");
-	*/
-	pcl::visualization::PCLVisualizer viewer("3D Viewer");
+	//pcl::visualization::PCLVisualizer viewer("3D Viewer");
 
 	while (!viewer.wasStopped())
 	{
