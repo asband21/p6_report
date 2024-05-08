@@ -5,3 +5,7 @@ pcl/build/*
 ./pcl/build/*
 pcl/build
 ./pcl/build
+pcl/build/CMakeFiles/
+pcl/build/CMakeFiles
+pcl/build/CMakeFiles*
+pcl/build/CMakeFiles/*
