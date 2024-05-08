@@ -1,0 +1,27 @@
+  movel(pose_trans(ref_frame,p[0.010000, 0.055087, -0.097500, 1.702124, -0.793714, -1.702124]),accel_mss,speed_ms,0,0) # end trace
+  speed_ms    = 1.000
+  movel(pose_trans(ref_frame,p[0.110000, 0.055087, -0.097500, 1.702124, -0.793714, -1.702124]),accel_mss,speed_ms,0,0.000)
+  movel(pose_trans(ref_frame,p[0.114992, 0.049750, -0.097500, 1.702124, -0.793714, -1.702124]),accel_mss,speed_ms,0,0.000)
+  movel(pose_trans(ref_frame,p[0.014992, 0.049750, -0.097500, 1.702124, -0.793714, -1.702124]),accel_mss,speed_ms,0,0) # end trace
+  speed_ms    = 0.050
+  movel(pose_trans(ref_frame,p[0.024780, 0.047766, -0.097500, 1.702124, -0.793714, -1.702124]),accel_mss,speed_ms,0,0.000)
+  movel(pose_trans(ref_frame,p[0.033979, 0.043875, -0.097500, 1.702124, -0.793714, -1.702124]),accel_mss,speed_ms,0,0.000)
+  movel(pose_trans(ref_frame,p[0.042220, 0.038234, -0.097500, 1.702124, -0.793714, -1.702124]),accel_mss,speed_ms,0,0.000)
+  movel(pose_trans(ref_frame,p[0.049177, 0.031067, -0.097500, 1.702124, -0.793714, -1.702124]),accel_mss,speed_ms,0,0.000)
+  movel(pose_trans(ref_frame,p[0.054570, 0.022661, -0.097500, 1.702124, -0.793714, -1.702124]),accel_mss,speed_ms,0,0.000)
+  movel(pose_trans(ref_frame,p[0.058185, 0.013351, -0.097500, 1.702124, -0.793714, -1.702124]),accel_mss,speed_ms,0,0.000)
+  movel(pose_trans(ref_frame,p[0.059877, 0.003508, -0.097500, 1.702124, -0.793714, -1.702124]),accel_mss,speed_ms,0,0.000)
+  movel(pose_trans(ref_frame,p[0.059579, -0.006475, -0.097500, 1.702124, -0.793714, -1.702124]),accel_mss,speed_ms,0,0.000)
+  movel(pose_trans(ref_frame,p[0.057303, -0.016200, -0.097500, 1.702124, -0.793714, -1.702124]),accel_mss,speed_ms,0,0.000)
+  movel(pose_trans(ref_frame,p[0.053139, -0.025278, -0.097500, 1.702124, -0.793714, -1.702124]),accel_mss,speed_ms,0,0.000)
+  movel(pose_trans(ref_frame,p[0.047255, -0.033348, -0.097500, 1.702124, -0.793714, -1.702124]),accel_mss,speed_ms,0,0.000)
+  movel(pose_trans(ref_frame,p[0.039883, -0.040087, -0.097500, 1.702124, -0.793714, -1.702124]),accel_mss,speed_ms,0,0.000)
+  movel(pose_trans(ref_frame,p[0.031320, -0.045227, -0.097500, 1.702124, -0.793714, -1.702124]),accel_mss,speed_ms,0,0.000)
+  movel(pose_trans(ref_frame,p[0.021906, -0.048562, -0.097500, 1.926875, -0.516304, -1.926875]),accel_mss,speed_ms,0,0.000)
+  movel(pose_trans(ref_frame,p[0.014992, -0.049750, -0.097500, 1.926875, -0.516304, -1.926875]),accel_mss,speed_ms,0,0) # end trace
+  speed_ms    = 1.000
+  movel(pose_trans(ref_frame,p[0.114992, -0.049750, -0.097500, 1.702124, -0.793714, -1.702124]),accel_mss,speed_ms,0,0.000)
+  movel(pose_trans(ref_frame,p[0.110000, -0.055000, -0.097500, 1.702124, -0.793714, -1.702124]),accel_mss,speed_ms,0,0.000)
+  movel(pose_trans(ref_frame,p[0.010000, -0.055000, -0.097500, 1.926875, -0.516304, -1.926875]),accel_mss,speed_ms,0,0) # end trace
+  speed_ms    = 0.050
+  movel(pose_trans(ref_frame,p[0.010000, -0.063800, -0.097500, 1.926875, -0.516304, -1.926875]),accel_mss,speed_ms,0,0.000)

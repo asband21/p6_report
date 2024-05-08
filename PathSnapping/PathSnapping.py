@@ -1,22 +1,58 @@
+import math
 import re
+from os.path import isfile
+
+CoordIdeal = [[], [], [], [], [], []]
+CoordOperator = [[], [], []]
+minIndex = []
+NewIndices = []
+pattern = r"\[(.*?), (.*?), (.*?), (.*?), (.*?), (.*?)\]"
 
 with open(r'toolpath_Ideal.txt', 'r') as file:
-    lines = file.readlines()
-array = [[], [], [], [], [], []]
+    ScriptIdeal = file.readlines()
+with open(r'toolpath_Operator.txt', 'r') as file:
+    ScriptOperator = file.readlines()
 
-for index, line in enumerate(lines):
+NewFile = "NewPath.txt"
+k = 1
+while isfile(NewFile):
+    NewFile = "NewPath({}).txt".format(k)
+    k += 1
+
+for index, line in enumerate(ScriptIdeal):
     # Check if the line contains the word "movel"
-    if "movel" not in line:
-        lines[index] = "false"
-for index, line in enumerate(lines):
-# Define a regular expression pattern to match the coordinates within square brackets
-    pattern = r"\[(.*?), (.*?), (.*?), (.*?), (.*?), (.*?)\]"
-# Use the findall method of the re module to extract the coordinates
-    matches = re.findall(pattern, lines[index])
-    if matches:
-        array[0].append(index)
-        for i in range(5):
-            array[i+1].append(float(matches[0][i]))
-for j in range(len(array[0])):
-    print("Coordinates:", array[1][j], array[2][j], array[3][j])
+    if "movel" in line:
+        matches = re.findall(pattern, ScriptIdeal[index])
+        if matches:
+            CoordIdeal[0].append(index)
+            for i in range(5):
+                CoordIdeal[i + 1].append(float(matches[0][i]))
+
+for index, line in enumerate(ScriptOperator):
+    if "movel" in line:
+        matches = re.findall(pattern, ScriptOperator[index])
+        if matches:
+            for i in range(3):
+                CoordOperator[i].append(float(matches[0][i]))
+
+for j in range(len(CoordOperator[0])):
+    Distance = [[], []]
+    for i in range(len(CoordIdeal[0])):
+        dist = math.sqrt(math.pow(CoordOperator[0][j]-CoordIdeal[1][i], 2) +
+                         math.pow(CoordOperator[1][j]-CoordIdeal[2][i], 2) +
+                         math.pow(CoordOperator[2][j]-CoordIdeal[3][i], 2))
+
+        Distance[1].append(dist)
+    minIndex.append(Distance[1].index(min(Distance[1])))
+    NewIndices.append(CoordIdeal[0][minIndex[j]])
+
+f = open(NewFile, "w")
+
+for i in range(len(ScriptIdeal)):
+    if "movel" not in ScriptIdeal[i]:
+        f.write(ScriptIdeal[i])
+    elif "movel" in ScriptIdeal[i] and i in NewIndices:
+        if i == NewIndices[0]:
+            f.write(ScriptIdeal[i])
+        f.write(ScriptIdeal[i])
 
