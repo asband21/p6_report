@@ -1,14 +1,6 @@
 #pcl byg
 # Ignore build directory in pcl
 pcl/build/
+visualtering/build/
+visualtering_2/build/
 
-pcl/build/
-./pcl/build/
-pcl/build/*
-./pcl/build/*
-pcl/build
-./pcl/build
-pcl/build/CMakeFiles/
-pcl/build/CMakeFiles
-pcl/build/CMakeFiles*
-pcl/build/CMakeFiles/*

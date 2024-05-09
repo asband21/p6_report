@@ -1,3 +1,0 @@
-/home/klyx/git/p6/prosjekt/visualtering/build/CMakeFiles/visual.dir
-/home/klyx/git/p6/prosjekt/visualtering/build/CMakeFiles/edit_cache.dir
-/home/klyx/git/p6/prosjekt/visualtering/build/CMakeFiles/rebuild_cache.dir
