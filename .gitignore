@@ -1,4 +1,7 @@
 #pcl byg
+# Ignore build directory in pcl
+pcl/build/
+
 pcl/build/
 ./pcl/build/
 pcl/build/*
