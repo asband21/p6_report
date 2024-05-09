@@ -47,12 +47,13 @@ for j in range(len(CoordOperator[0])):
     NewIndices.append(CoordIdeal[0][minIndex[j]])
 
 f = open(NewFile, "w")
-
+print(min(NewIndices))
+print(max(NewIndices))
 for i in range(len(ScriptIdeal)):
     if "movel" not in ScriptIdeal[i]:
         f.write(ScriptIdeal[i])
-    elif "movel" in ScriptIdeal[i] and i in NewIndices:
-        if i == NewIndices[0]:
-            f.write(ScriptIdeal[i])
+    elif "movel" in ScriptIdeal[i] and i in range(min(NewIndices), (max(NewIndices)+1)):
+        #if i == NewIndices[0]: For adding a translation to first point if necessary
+            #f.write(ScriptIdeal[i])
         f.write(ScriptIdeal[i])
 
