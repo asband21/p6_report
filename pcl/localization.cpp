@@ -88,11 +88,11 @@ pcl::PointCloud<pcl::PointXYZ> load_from_csv(char *file_pach)
         //open file pafh
         FILE *fs;
         if( !(fs = fopen(file_pach,"r")))
-	{
-		fprintf(stderr,"kunne ikke finde \"%s\"",file_pach);
+        {
+                fprintf(stderr,"kunne ikke finde \"%s\"",file_pach);
                 exit(2);
-	}
-		int point_coundt = 0;
+        }
+        int point_coundt = 0;
         double x, y, z;
         while (EOF != fscanf(fs,"%lf,%lf,%lf",&x, &y, &z))
                 point_coundt++;
@@ -116,27 +116,21 @@ pcl::PointCloud<pcl::PointXYZ> load_from_csv(char *file_pach)
 
 void VoxelGrid_fjerndubel(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, double grid_size = 0.001f)
 {
-    pcl::PCLPointCloud2::Ptr cloud2(new pcl::PCLPointCloud2());
-    pcl::PCLPointCloud2::Ptr cloud_filtered(new pcl::PCLPointCloud2());
+        pcl::PCLPointCloud2::Ptr cloud2(new pcl::PCLPointCloud2());
+        pcl::PCLPointCloud2::Ptr cloud_filtered(new pcl::PCLPointCloud2());
 
-    // Convert from PointXYZ to PCLPointCloud2
-    pcl::toPCLPointCloud2(*cloud, *cloud2);
+        // Convert from PointXYZ to PCLPointCloud2
+        pcl::toPCLPointCloud2(*cloud, *cloud2);
 
-    // Create the voxel grid filter
-    pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
-    sor.setInputCloud(cloud2);
-    sor.setLeafSize(grid_size, grid_size, grid_size);
-    sor.filter(*cloud_filtered);
-
-    // Convert back from PCLPointCloud2 to PointXYZ
-    pcl::fromPCLPointCloud2(*cloud_filtered, *cloud);
-    std::cout << "Voxel grid filter applied with leaf size: " << grid_size << std::endl;
+        // Create the voxel grid filter
+        pcl::VoxelGrid<pcl::PCLPointCloud2> sor;
+        sor.setInputCloud(cloud2);
+        sor.setLeafSize(grid_size, grid_size, grid_size);
+        sor.filter(*cloud_filtered);
+        // Convert back from PCLPointCloud2 to PointXYZ
+        pcl::fromPCLPointCloud2(*cloud_filtered, *cloud);
+        std::cout << "Voxel grid filter applied with leaf size: " << grid_size << std::endl;
 }
-
-
-
-
-
 
 Eigen::Matrix4f performICP(const pcl::PointCloud<pcl::PointXYZ>::Ptr &source, const pcl::PointCloud<pcl::PointXYZ>::Ptr &target)
 {
@@ -163,6 +157,29 @@ Eigen::Matrix4f performICP(const pcl::PointCloud<pcl::PointXYZ>::Ptr &source, co
 	return icp.getFinalTransformation();
 }
 
+Eigen::Matrix4f Quaternions_to_matrix(std::array<double,4> q)
+{
+        //q is a unit quaternion
+        double qx, qy, qz, qw;
+        qw = q[0];
+        qx = q[1];
+        qy = q[2];
+        qz = q[3];
+
+		Eigen::Matrix4f rot = Eigen::Matrix4f::Identity();
+		rot(0,0) = 1.0f - 2.0f*qy*qy - 2.0f*qz*qz;
+		rot(0,1) = 2.0f*qx*qy - 2.0f*qz*qw;
+		rot(0,2) = 2.0f*qx*qz + 2.0f*qy*qw;
+
+		rot(1,0) = 2.0f*qx*qy + 2.0f*qz*qw;
+		rot(1,1) = 1.0f - 2.0f*qx*qx - 2.0f*qz*qz;
+		rot(1,2) = 2.0f*qy*qz - 2.0f*qx*qw;
+
+		rot(2,0) = 2.0f*qx*qz - 2.0f*qy*qw;
+		rot(2,1) = 2.0f*qy*qz + 2.0f*qx*qw;
+		rot(2,2) = 1.0f - 2.0f*qx*qx - 2.0f*qy*qy;
+		return rot;
+}
 int main()
 {
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cad_model(new pcl::PointCloud<pcl::PointXYZ>);
@@ -182,8 +199,6 @@ int main()
 	 */
 	VoxelGrid_fjerndubel(scan, 0.005f);
 	VoxelGrid_fjerndubel(cad_model, 0.005f);
-
-
 
 	Eigen::Matrix4f transformation = performICP(scan, cad_model);
 	
