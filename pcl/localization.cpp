@@ -239,8 +239,8 @@ int main()
 	pcl::PointCloud<pcl::PointXYZ>::Ptr rota(new pcl::PointCloud<pcl::PointXYZ>);
 	*rota = point_on_sphere(900);
 
-	char sti_ref[] = "./pungsky.csv"; //reference_pointcloud.csv
-	char sti_scan[] = "./skan_RT_pungsky_med_dobbler.csv"; //scan_RT_pointcloud_w_duplicates.csv
+	char sti_ref[] = "./reference_pointcloud.csv";
+	char sti_scan[] = "./scan_RT_pointcloud_w_duplicates.csv";
 	*cad_model = load_from_csv(sti_ref);
 	*scan = load_from_csv(sti_scan);
 	printf("\n-----------\n");
