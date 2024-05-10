@@ -10,6 +10,29 @@
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/visualization/pcl_visualizer.h>
 
+Eigen::Matrix4f quaternions_to_matrix(std::array<double,4> q)
+{
+        //q is a unit quaternion
+	double qx, qy, qz, qw;
+	qw = q[0];
+	qx = q[1];
+	qy = q[2];
+	qz = q[3];
+
+	Eigen::Matrix4f rot = Eigen::Matrix4f::Identity();
+	rot(0,0) = 1.0f - 2.0f*qy*qy - 2.0f*qz*qz;
+	rot(0,1) = 2.0f*qx*qy - 2.0f*qz*qw;
+	rot(0,2) = 2.0f*qx*qz + 2.0f*qy*qw;
+
+	rot(1,0) = 2.0f*qx*qy + 2.0f*qz*qw;
+	rot(1,1) = 1.0f - 2.0f*qx*qx - 2.0f*qz*qz;
+	rot(1,2) = 2.0f*qy*qz - 2.0f*qx*qw;
+
+	rot(2,0) = 2.0f*qx*qz - 2.0f*qy*qw;
+	rot(2,1) = 2.0f*qy*qz + 2.0f*qx*qw;
+	rot(2,2) = 1.0f - 2.0f*qx*qx - 2.0f*qy*qy;
+	return rot;
+}
 pcl::PointCloud<pcl::PointXYZ> point_on_shver(int number_cound)
 {
         pcl::PointCloud<pcl::PointXYZ> cloud;
@@ -131,8 +154,14 @@ void VoxelGrid_fjerndubel(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, double grid
         pcl::fromPCLPointCloud2(*cloud_filtered, *cloud);
         std::cout << "Voxel grid filter applied with leaf size: " << grid_size << std::endl;
 }
+struct icp_return
+{
+	Eigen::Matrix4f trans_matrix;
+	bool converged;
+	double FitnessScore;
+};
 
-Eigen::Matrix4f performICP(const pcl::PointCloud<pcl::PointXYZ>::Ptr &source, const pcl::PointCloud<pcl::PointXYZ>::Ptr &target)
+struct icp_return performICP(const pcl::PointCloud<pcl::PointXYZ>::Ptr &source, const pcl::PointCloud<pcl::PointXYZ>::Ptr &target)
 {
 	pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
 	icp.setInputSource(source);
@@ -142,7 +171,7 @@ Eigen::Matrix4f performICP(const pcl::PointCloud<pcl::PointXYZ>::Ptr &source, co
 	// distances will be ignored)
 	icp.setMaxCorrespondenceDistance (17.5);
 	// Set the maximum number of iterations (criterion 1)
-	icp.setMaximumIterations (50000);
+	icp.setMaximumIterations (50);
 	// Set the transformation epsilon (criterion 2)
 	icp.setTransformationEpsilon (1e-8);
 	// Set the euclidean distance difference epsilon (criterion 3)
@@ -154,32 +183,44 @@ Eigen::Matrix4f performICP(const pcl::PointCloud<pcl::PointXYZ>::Ptr &source, co
 	icp.align(Final);
 	std::cout << "has converged:" << icp.hasConverged() << " score: " << icp.getFitnessScore() << std::endl;
 	std::cout << icp.getFinalTransformation() << std::endl;
-	return icp.getFinalTransformation();
+	struct icp_return g;
+	g.trans_matrix = icp.getFinalTransformation();
+	g.converged = icp.hasConverged();
+	g.FitnessScore = icp.getFitnessScore();
+	return g;
 }
 
-Eigen::Matrix4f Quaternions_to_matrix(std::array<double,4> q)
+Eigen::Matrix4f multi_ICP(const pcl::PointCloud<pcl::PointXYZ>::Ptr &source, const pcl::PointCloud<pcl::PointXYZ>::Ptr &target, int vinkle)
 {
-        //q is a unit quaternion
-        double qx, qy, qz, qw;
-        qw = q[0];
-        qx = q[1];
-        qy = q[2];
-        qz = q[3];
+	if(vinkle < 0){ fprintf(stderr,"antal vinkler skal være stære ind 0\n"); exit(2);}
+	if(vinkle > 50){fprintf(stderr,"antal vinkler skal være minder ind 50\nklap lige hæsten makker\n"); exit(2);}
+	
+	std::vector<std::array<double,4>> rotaiens_Q = super_fib_list(vinkle);
+	
+	std::vector<struct icp_return> icp_lis(vinkle);
+	pcl::PointCloud<pcl::PointXYZ>::Ptr T(new pcl::PointCloud<pcl::PointXYZ>);
 
-		Eigen::Matrix4f rot = Eigen::Matrix4f::Identity();
-		rot(0,0) = 1.0f - 2.0f*qy*qy - 2.0f*qz*qz;
-		rot(0,1) = 2.0f*qx*qy - 2.0f*qz*qw;
-		rot(0,2) = 2.0f*qx*qz + 2.0f*qy*qw;
+	double min = std::numeric_limits<double>::max();
+	double max = 0;
+	int index = 0;
+	for(int i = 0; i < vinkle; i++)
+	{
+		pcl::transformPointCloud (*source, *T,	quaternions_to_matrix(rotaiens_Q[i]));
+		icp_lis[i] = performICP(T, target);
+		if((icp_lis[i]).FitnessScore < min)
+		//if((icp_lis[i]).FitnessScore > max)
+		{
+			index = i;
+			min = (icp_lis[i]).FitnessScore;
+			//max = (icp_lis[i]).FitnessScore;
+		}
 
-		rot(1,0) = 2.0f*qx*qy + 2.0f*qz*qw;
-		rot(1,1) = 1.0f - 2.0f*qx*qx - 2.0f*qz*qz;
-		rot(1,2) = 2.0f*qy*qz - 2.0f*qx*qw;
-
-		rot(2,0) = 2.0f*qx*qz - 2.0f*qy*qw;
-		rot(2,1) = 2.0f*qy*qz + 2.0f*qx*qw;
-		rot(2,2) = 1.0f - 2.0f*qx*qx - 2.0f*qy*qy;
-		return rot;
+	}
+	Eigen::Matrix4f compleda_transfomasin =(icp_lis[index]).trans_matrix * quaternions_to_matrix(rotaiens_Q[index]) ;
+	return compleda_transfomasin;
 }
+
+
 int main()
 {
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cad_model(new pcl::PointCloud<pcl::PointXYZ>);
@@ -200,7 +241,8 @@ int main()
 	VoxelGrid_fjerndubel(scan, 0.005f);
 	VoxelGrid_fjerndubel(cad_model, 0.005f);
 
-	Eigen::Matrix4f transformation = performICP(scan, cad_model);
+	//Eigen::Matrix4f transformation = performICP(scan, cad_model);
+	Eigen::Matrix4f transformation = multi_ICP(scan, cad_model, 16);
 	
 	pcl::transformPointCloud (*scan, *scan_2, transformation);
 
