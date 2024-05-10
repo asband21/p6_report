@@ -10,12 +10,12 @@
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/visualization/pcl_visualizer.h>
 
-Eigen::Matrix4f quaternions_to_matrix(std::array<double,4> q, bool normellise = true)
+Eigen::Matrix4f quaternions_to_matrix(std::array<double,4> q, bool normalise = true)
 {
         //q is a unit quaternion
 	double qx, qy, qz, qw, n;
 	
-	n = normellise ? 1.0f/std::sqrt(q[0]*q[0]+q[1]*q[1]+q[2]*q[2]+q[3]*q[3]) : 1;
+	n = normalise ? 1.0f/std::sqrt(q[0]*q[0]+q[1]*q[1]+q[2]*q[2]+q[3]*q[3]) : 1;
 	qw = n*q[0];
 	qx = n*q[1];
 	qy = n*q[2];
@@ -35,10 +35,10 @@ Eigen::Matrix4f quaternions_to_matrix(std::array<double,4> q, bool normellise = 
 	rot(2,2) = 1.0f - 2.0f*qx*qx - 2.0f*qy*qy;
 	return rot;
 }
-pcl::PointCloud<pcl::PointXYZ> point_on_shver(int number_cound)
+pcl::PointCloud<pcl::PointXYZ> point_on_sphere(int number_count)
 {
         pcl::PointCloud<pcl::PointXYZ> cloud;
-	cloud.width    = number_cound;
+	cloud.width    = number_count;
 	cloud.height   = 1;
 	cloud.is_dense = false;
 	cloud.resize (cloud.width * cloud.height);
@@ -48,7 +48,7 @@ pcl::PointCloud<pcl::PointXYZ> point_on_shver(int number_cound)
 
 	for (auto& point: cloud)
 	{
-		point.x = 1.0-(i/((double)number_cound - 1.0))*2;
+		point.x = 1.0-(i/((double)number_count - 1.0))*2;
 		double radius = std::sqrt(1-point.x*point.x);
 		point.y = std::cos(phi*i)*radius;
 		point.z = std::sin(phi*i)*radius;
@@ -58,6 +58,7 @@ pcl::PointCloud<pcl::PointXYZ> point_on_shver(int number_cound)
 }
 
 
+	// fib for Fibbonachi
 std::vector<std::array<double,4>> super_fib_list(int n)
 {
 	std::vector<std::array<double,4>> Q(n);
@@ -90,15 +91,17 @@ struct qrt_srt
 	double z;
 	double w;
 };
-//Generating n samples on SO(3) asunit quaternions
+
+
+//Generating n samples on SO(3) as unit quaternions
 struct qrt_srt Super_Fibonacci(int i, int n)
 {
-	//constands
+	//constants
 	double p = sqrt(2);
 	double l = 1.533751168755204288118041;
 
-	double s = i + 0.5;
-	double t = s/n;
+	double s = i + 0.5; 
+	double t = s/n; 
 	double d = 2*M_PI*s;
 	double r = std::sqrt(t);
 	double R = std::sqrt(1-t);
@@ -108,30 +111,33 @@ struct qrt_srt Super_Fibonacci(int i, int n)
 	return qur;
 }
 
-pcl::PointCloud<pcl::PointXYZ> load_from_csv(char *file_pach)
+pcl::PointCloud<pcl::PointXYZ> load_from_csv(char *file_path)
 {
-        //open file pafh
+        //open file path
         FILE *fs;
-        if( !(fs = fopen(file_pach,"r")))
+        if( !(fs = fopen(file_path,"r")))
         {
-                fprintf(stderr,"kunne ikke finde \"%s\"",file_pach);
+                fprintf(stderr,"\"%s\" Could not be found",file_path);
                 exit(2);
         }
-        int point_coundt = 0;
+
+		// The amount of data in the file is recorded
+        int point_count = 0;
         double x, y, z;
         while (EOF != fscanf(fs,"%lf,%lf,%lf",&x, &y, &z))
-                point_coundt++;
+                point_count++;
         fclose(fs);     
-        printf("%d antal pungter\n", point_coundt);
+        printf("Amount of points: %d\n", point_count);
 
         pcl::PointCloud<pcl::PointXYZ> cloud;
-        cloud.width    = point_coundt;
+        cloud.width    = point_count;
         cloud.height   = 1;
         cloud.is_dense = false;
         cloud.resize (cloud.width * cloud.height);
         
-	if( !(fs = fopen(file_pach,"r")))
+	if( !(fs = fopen(file_path,"r")))
 		exit(2);
+		// Data is read from the file
 	for (auto& point: cloud)
 		if(EOF == fscanf(fs,"%f,%f,%f",&(point.x), &(point.y), &(point.z)))
 			exit(2);
@@ -139,7 +145,7 @@ pcl::PointCloud<pcl::PointXYZ> load_from_csv(char *file_pach)
 	return cloud;
 }
 
-void VoxelGrid_fjerndubel(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, double grid_size = 0.001f)
+void VoxelGrid_homogenise(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, double grid_size = 0.001f)
 {
         pcl::PCLPointCloud2::Ptr cloud2(new pcl::PCLPointCloud2());
         pcl::PCLPointCloud2::Ptr cloud_filtered(new pcl::PCLPointCloud2());
@@ -152,10 +158,12 @@ void VoxelGrid_fjerndubel(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, double grid
         sor.setInputCloud(cloud2);
         sor.setLeafSize(grid_size, grid_size, grid_size);
         sor.filter(*cloud_filtered);
+	
         // Convert back from PCLPointCloud2 to PointXYZ
         pcl::fromPCLPointCloud2(*cloud_filtered, *cloud);
         std::cout << "Voxel grid filter applied with leaf size: " << grid_size << std::endl;
 }
+
 struct icp_return
 {
 	Eigen::Matrix4f trans_matrix;
@@ -192,25 +200,24 @@ struct icp_return performICP(const pcl::PointCloud<pcl::PointXYZ>::Ptr &source, 
 	return g;
 }
 
-Eigen::Matrix4f multi_ICP(const pcl::PointCloud<pcl::PointXYZ>::Ptr &source, const pcl::PointCloud<pcl::PointXYZ>::Ptr &target, int vinkle)
+Eigen::Matrix4f multi_ICP(const pcl::PointCloud<pcl::PointXYZ>::Ptr &source, const pcl::PointCloud<pcl::PointXYZ>::Ptr &target, int angles)
 {
-	if(vinkle < 0){ fprintf(stderr,"antal vinkler skal være stære ind 0\n"); exit(2);}
-	if(vinkle > 50){fprintf(stderr,"antal vinkler skal være minder ind 50\nklap lige hæsten makker\n"); exit(2);}
+	if(angles < 0){ fprintf(stderr,"Number of angles must be greater than 0\n"); exit(2);}
+	if(angles > 50){fprintf(stderr,"Number of angles must be less than 50\n Smack the horse, buddy\n"); exit(2);}
 	
-	std::vector<std::array<double,4>> rotaiens_Q = super_fib_list(vinkle);
+	std::vector<std::array<double,4>> rotations_Q = super_fib_list(angles);
 	
-	std::vector<struct icp_return> icp_lis(vinkle);
+	std::vector<struct icp_return> icp_lis(angles);
 	pcl::PointCloud<pcl::PointXYZ>::Ptr T(new pcl::PointCloud<pcl::PointXYZ>);
 
 	double min = std::numeric_limits<double>::max();
 	double max = 0;
 	int index = 0;
-	for(int i = 0; i < vinkle; i++)
+	for(int i = 0; i < angles; i++)
 	{
-		pcl::transformPointCloud (*source, *T,	quaternions_to_matrix(rotaiens_Q[i]));
+		pcl::transformPointCloud (*source, *T,	quaternions_to_matrix(rotations_Q[i]));
 		icp_lis[i] = performICP(T, target);
 		if((icp_lis[i]).FitnessScore < min)
-		//if((icp_lis[i]).FitnessScore > max)
 		{
 			index = i;
 			min = (icp_lis[i]).FitnessScore;
@@ -218,8 +225,8 @@ Eigen::Matrix4f multi_ICP(const pcl::PointCloud<pcl::PointXYZ>::Ptr &source, con
 		}
 
 	}
-	Eigen::Matrix4f compleda_transfomasin =(icp_lis[index]).trans_matrix * quaternions_to_matrix(rotaiens_Q[index]) ;
-	return compleda_transfomasin;
+	Eigen::Matrix4f complete_transformation =(icp_lis[index]).trans_matrix * quaternions_to_matrix(rotations_Q[index]) ;
+	return complete_transformation;
 }
 
 
@@ -230,25 +237,24 @@ int main()
 	pcl::PointCloud<pcl::PointXYZ>::Ptr scan_2(new pcl::PointCloud<pcl::PointXYZ>);
 
 	pcl::PointCloud<pcl::PointXYZ>::Ptr rota(new pcl::PointCloud<pcl::PointXYZ>);
-	*rota = point_on_shver(900);
+	*rota = point_on_sphere(900);
 
-	char sti_ref[] = "./pungsky.csv";
-	char sti_scan[] = "./skan_RT_pungsky_med_dobbler.csv";
+	char sti_ref[] = "./pungsky.csv"; //reference_pointcloud.csv
+	char sti_scan[] = "./skan_RT_pungsky_med_dobbler.csv"; //scan_RT_pointcloud_w_duplicates.csv
 	*cad_model = load_from_csv(sti_ref);
 	*scan = load_from_csv(sti_scan);
 	printf("\n-----------\n");
 
-	/*
-	 */
-	VoxelGrid_fjerndubel(scan, 0.005f);
-	VoxelGrid_fjerndubel(cad_model, 0.005f);
+	
+	VoxelGrid_homogenise(scan, 0.005f);
+	VoxelGrid_homogenise(cad_model, 0.005f);
 
 	//Eigen::Matrix4f transformation = performICP(scan, cad_model);
 	Eigen::Matrix4f transformation = multi_ICP(scan, cad_model, 16);
 	
 	pcl::transformPointCloud (*scan, *scan_2, transformation);
 
-	// Optionally visualize the result
+	// Optionally visualise the result
 	pcl::visualization::PCLVisualizer viewer("ICP demo");
 	pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> source_color(scan, 255, 0, 0);
 	pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> source_2_color(scan_2, 0, 0, 255);
