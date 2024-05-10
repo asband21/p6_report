@@ -10,14 +10,16 @@
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/visualization/pcl_visualizer.h>
 
-Eigen::Matrix4f quaternions_to_matrix(std::array<double,4> q)
+Eigen::Matrix4f quaternions_to_matrix(std::array<double,4> q, bool normellise = true)
 {
         //q is a unit quaternion
-	double qx, qy, qz, qw;
-	qw = q[0];
-	qx = q[1];
-	qy = q[2];
-	qz = q[3];
+	double qx, qy, qz, qw, n;
+	
+	n = normellise ? 1.0f/std::sqrt(q[0]*q[0]+q[1]*q[1]+q[2]*q[2]+q[3]*q[3]) : 1;
+	qw = n*q[0];
+	qx = n*q[1];
+	qy = n*q[2];
+	qz = n*q[3];
 
 	Eigen::Matrix4f rot = Eigen::Matrix4f::Identity();
 	rot(0,0) = 1.0f - 2.0f*qy*qy - 2.0f*qz*qz;
