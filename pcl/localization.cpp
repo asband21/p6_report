@@ -37,6 +37,7 @@ Eigen::Matrix4f quaternions_to_matrix(std::array<double,4> q, bool normalise = t
 }
 pcl::PointCloud<pcl::PointXYZ> point_on_sphere(int number_count)
 {
+	//https://marcalexa.github.io/superfibonacci/
         pcl::PointCloud<pcl::PointXYZ> cloud;
 	cloud.width    = number_count;
 	cloud.height   = 1;
@@ -58,7 +59,7 @@ pcl::PointCloud<pcl::PointXYZ> point_on_sphere(int number_count)
 }
 
 
-	// fib for Fibbonachi
+	// fib for Fibbonachi https://marcalexa.github.io/superfibonacci/
 std::vector<std::array<double,4>> super_fib_list(int n)
 {
 	std::vector<std::array<double,4>> Q(n);
