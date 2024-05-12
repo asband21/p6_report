@@ -230,6 +230,43 @@ Eigen::Matrix4f multi_ICP(const pcl::PointCloud<pcl::PointXYZ>::Ptr &source, con
 	return complete_transformation;
 }
 
+pcl::PointCloud<pcl::PointXYZ> c_arey_to_pcl_pc(int point_count, double *points);
+{
+
+        pcl::PointCloud<pcl::PointXYZ> cloud;
+        cloud.width    = point_count;
+        cloud.height   = 1;
+        cloud.is_dense = false;
+        cloud.resize (cloud.width * cloud.height);
+        int i = 0;
+	for (auto& point: cloud)
+        {
+		point.x = *(points+i*3);
+		point.y = *(points+i*3+1);
+		point.z = *(points+i*3+2);
+                i++;
+        }
+        icp_return cloud;
+}
+extern "C"
+{
+        void lokailasiens(double* output,int scan_count, double *scan, int cad_count, double *cad)
+        {
+	        pcl::PointCloud<pcl::PointXYZ>::Ptr cad_model(new pcl::PointCloud<pcl::PointXYZ>);
+	        pcl::PointCloud<pcl::PointXYZ>::Ptr scan(new pcl::PointCloud<pcl::PointXYZ>);
+                scan = cad_model(scan_count,scan);
+                cad_model = cad_model(cad_count,cad);
+	        Eigen::Matrix4f transformation = multi_ICP(scan, cad_model, 16);
+                transformation 
+                for (int i = 0; i < 4; i++)
+                {
+                        output[4*i + 0] = transformation[i][0];
+                        output[4*i + 1] = transformation[i][1];
+                        output[4*i + 2] = transformation[i][2];
+                        output[4*i + 3] = transformation[i][3];
+                }
+        }
+}
 
 int main()
 {
