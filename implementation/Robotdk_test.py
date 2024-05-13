@@ -62,7 +62,7 @@ def SetUp():
     robot.setJointLimits(joint_lower_limits,joint_upper_limits)# set the joint limits of the robot
    
     # Set the speed of the robot, simulation and enambe redering
-    robot.setSpeed(0.01) # Set the speed of the robot to 100 mm/s
+    robot.setSpeed(1) # Set the speed of the robot to 100 mm/s
     RDK.Render(True) # render the simulation
     RDK.setSimulationSpeed(0.015) # set the simulation speed t
     print("Simulations speed : %s " % RDK.SimulationSpeed())
@@ -140,7 +140,7 @@ def COLLISION_check(collisions_bool,program):
     return collions_precentages
 
 
-def Collision_mapping(robot,robot_target,weld_targe_external) : 
+def Collision_mapping(robot_target,weld_targe_external) : 
     
             RDK.PluginCommand("CollisionFreePlanner", "Display", 1) 
             #RDK.Command('CollisionFreePlanner', 'IsUsingWeightedPoints', 0) # set the weighted points to false, using random joints
@@ -173,7 +173,7 @@ def Collision_mapping(robot,robot_target,weld_targe_external) :
                 status =RDK.PluginCommand("CollisionFreePlanner", f"Join={TO_home_name}",f"{weld_targe_external.Name()}|{ robot_target.Name() }")
 
             # after the paht is found, the robot is place on the target, but is moved back to its start postion
-            robot.setJoints(robot_target.Joints())
+            
             print("Path genreation was a %s"%status) 
             return TO_home_name,TO_weld_name
 
@@ -197,12 +197,12 @@ def Main() :
         #This set the target in the simulation, this is where the location code have to inseret a X,Y,Z,Rx,Ry,Rz 
         target.setPose(TxyzRxyz_2_Pose([967.629,524.114,15.000,0,0,0])) # set the target to new coordinates given from the camera  
        
-       
+        input("ready?")
         Update(path_settings,robot,program,target) # update the path and robot settings 
         
         #select the welding seam 
         #Accuring the coordiens of the weld pistol (TCP)
-        input("ready?") 
+         
         i = 0 
         drag_coordianes = {}
         drag_joints = {}
@@ -263,8 +263,8 @@ def Main() :
         
 
         # The program will know being its collision detection and path generation 
-        TO_home_name,TO_weld_name=Collision_mapping(robot,robot_target,weld_targe_external) # the collision mapping of the robot
-        
+        TO_home_name,TO_weld_name=Collision_mapping(robot_target,weld_targe_external) # the collision mapping of the robot
+        robot.setJoints(robot_target.Joints()) # set the joints of the robot to the joints of the target
 
         # set the runMode to one that does not move the real robot 
         RDK.setRunMode(1) # int = RUNMODE RUNMODE_SIMULATE=1 performs the simulation moving the robot (default) RUNMODE_QUICKVALIDATE=2 performs a quick check to validate the robot movements RUNMODE_MAKE_ROBOTPROG=3 makes the robot program RUNMODE_RUN_REAL=4 moves the real robot is it is connected
@@ -273,17 +273,17 @@ def Main() :
          
         # Run program 
         Update(path_settings,robot,program,target)
-        collions_precentages=COLLISION_check(collisions_bool,program) # check if the program has any collisions 
-        
+       
          
-        # A test where the new programs are runned
-        while True: 
+        # A test where the new programs are runned 
+        while True:   
+            RDK.RunProgram(TO_weld_name, True) 
             RDK.RunProgram(TO_home_name, True)
-            RDK.RunProgram(TO_weld_name, True) # Run the program "Main" until the end, switch true with False if you want the program stop before the program is finished
             
         
         
         if False :
+            collions_precentages=COLLISION_check(collisions_bool,program) # check if the program has any collisions 
         
             if collions_precentages == 100:    
                 print("The program is collision free" ) 
