@@ -1,5 +1,6 @@
 #include <math.h>
 #include <thread>
+#include <time.h>
 #include <chrono>
 #include <iostream>
 #include <pcl/io/pcd_io.h>
@@ -172,7 +173,7 @@ struct icp_return
 	double FitnessScore;
 };
 
-struct icp_return performICP(const pcl::PointCloud<pcl::PointXYZ>::Ptr &source, const pcl::PointCloud<pcl::PointXYZ>::Ptr &target)
+struct icp_return performICP(const pcl::PointCloud<pcl::PointXYZ>::Ptr &source, const pcl::PointCloud<pcl::PointXYZ>::Ptr &target, bool verbos = false)
 {
 	pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
 	icp.setInputSource(source);
@@ -182,18 +183,21 @@ struct icp_return performICP(const pcl::PointCloud<pcl::PointXYZ>::Ptr &source, 
 	// distances will be ignored)
 	icp.setMaxCorrespondenceDistance (17.5);
 	// Set the maximum number of iterations (criterion 1)
-	icp.setMaximumIterations (50);
+	icp.setMaximumIterations (5000);
 	// Set the transformation epsilon (criterion 2)
 	icp.setTransformationEpsilon (1e-8);
 	// Set the euclidean distance difference epsilon (criterion 3)
-	icp.setEuclideanFitnessEpsilon (0.01);
+	icp.setEuclideanFitnessEpsilon (0.001);
 	/*
 	*/
 	
 	pcl::PointCloud<pcl::PointXYZ> Final;
 	icp.align(Final);
-	std::cout << "has converged:" << icp.hasConverged() << " score: " << icp.getFitnessScore() << std::endl;
-	std::cout << icp.getFinalTransformation() << std::endl;
+	if(verbos)
+	{
+		std::cout << "has converged:" << icp.hasConverged() << " score: " << icp.getFitnessScore() << std::endl;
+		std::cout << icp.getFinalTransformation() << std::endl;
+	}
 	struct icp_return g;
 	g.trans_matrix = icp.getFinalTransformation();
 	g.converged = icp.hasConverged();
@@ -230,6 +234,7 @@ Eigen::Matrix4f multi_ICP(const pcl::PointCloud<pcl::PointXYZ>::Ptr &source, con
 	return complete_transformation;
 }
 
+/*
 pcl::PointCloud<pcl::PointXYZ> c_arey_to_pcl_pc(int point_count, double *points);
 {
 
@@ -257,7 +262,6 @@ extern "C"
                 scan = cad_model(scan_count,scan);
                 cad_model = cad_model(cad_count,cad);
 	        Eigen::Matrix4f transformation = multi_ICP(scan, cad_model, 16);
-                transformation 
                 for (int i = 0; i < 4; i++)
                 {
                         output[4*i + 0] = transformation[i][0];
@@ -267,29 +271,62 @@ extern "C"
                 }
         }
 }
-
-int main()
+*/
+int main(int argc, char *argv[])
 {
-	pcl::PointCloud<pcl::PointXYZ>::Ptr cad_model(new pcl::PointCloud<pcl::PointXYZ>);
+	srand (time(NULL));
 	pcl::PointCloud<pcl::PointXYZ>::Ptr scan(new pcl::PointCloud<pcl::PointXYZ>);
 	pcl::PointCloud<pcl::PointXYZ>::Ptr scan_2(new pcl::PointCloud<pcl::PointXYZ>);
 
-	pcl::PointCloud<pcl::PointXYZ>::Ptr rota(new pcl::PointCloud<pcl::PointXYZ>);
-	*rota = point_on_sphere(900);
-
-	char sti_ref[] = "./reference_pointcloud.csv";
 	char sti_scan[] = "./scan_RT_pointcloud_w_duplicates.csv";
-	*cad_model = load_from_csv(sti_ref);
 	*scan = load_from_csv(sti_scan);
 	printf("\n-----------\n");
 
-	
-	VoxelGrid_homogenise(scan, 0.005f);
-	VoxelGrid_homogenise(cad_model, 0.005f);
 
-	//Eigen::Matrix4f transformation = performICP(scan, cad_model);
+	VoxelGrid_homogenise(scan, 0.005f);
+
+	int r = 200;
+	int test_runds = 20;
+	std::vector<std::array<double,4>> rotations_Q = super_fib_list( 5001);
+	for(int i = 0; i < test_runds; i++)
+	{
+		Eigen::Matrix4f transformation = quaternions_to_matrix(rotations_Q[rand() % 5000]);
+		transformation(0,3) = ((double)rand() / (double)RAND_MAX) * 2;
+		transformation(1,3) = ((double)rand() / (double)RAND_MAX) * 2;
+		transformation(2,3) = ((double)rand() / (double)RAND_MAX) * 2;
+		pcl::transformPointCloud(*scan, *scan_2, transformation);
+		Eigen::Matrix4f icp_transformation = multi_ICP(scan, scan_2, 20);
+		
+		for(int j = 0; j < 4; j++)
+		{
+			for(int k = 0;k < 4; k++)
+				printf("%lf,", abs(transformation(j,k)-icp_transformation(j,k))/transformation(j,k));
+		}
+		printf("    ,");
+		for(int j = 0; j < 4; j++)
+		{
+			for(int k = 0;k < 4; k++)
+				printf("%lf,", transformation(j,k));
+		}
+		printf("    ,");
+		for(int j = 0; j < 4; j++)
+		{
+			for(int k = 0;k < 4; k++)
+				printf("%lf,", icp_transformation(j,k));
+		}
+		printf("\n");
+
+		//printf("sours\n");
+		//std::cout << transformation << std::endl;
+		//printf("icp\n");
+		//std::cout << icp_transformation << std::endl;
+		//printf(" \n-----------------|%d\t|------------------\n", i);
+
+
+	}
+	/*
 	Eigen::Matrix4f transformation = multi_ICP(scan, cad_model, 16);
-	
+
 	pcl::transformPointCloud (*scan, *scan_2, transformation);
 
 	// Optionally visualise the result
@@ -308,6 +345,7 @@ int main()
 		viewer.spinOnce(10000000);
 		std::this_thread::sleep_for(std::chrono::milliseconds(100));
 	}
+	*/
 	return 0;
 }
 

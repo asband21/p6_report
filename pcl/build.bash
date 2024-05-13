@@ -5,4 +5,4 @@ cmake ..
 make clean
 make
 cd ..
-./build/localization
+./build/localization g
