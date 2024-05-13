@@ -96,7 +96,7 @@ struct qrt_srt
 
 
 //Generating n samples on SO(3) as unit quaternions
-struct qrt_srt Super_Fibonacci(int i, int n)
+std::array<double,4> Super_Fibonacci(int i, int n)
 {
 	//constants
 	double p = sqrt(2);
@@ -109,7 +109,7 @@ struct qrt_srt Super_Fibonacci(int i, int n)
 	double R = std::sqrt(1-t);
 	double a = d/p;
 	double b = d/l;
-	struct qrt_srt qur = {r*std::sin(a), r*std::cos(a), R*std::sin(b), R*std::cos(b)};
+	std::array<double,4>  qur = {r*std::sin(a), r*std::cos(a), R*std::sin(b), R*std::cos(b)};
 	return qur;
 }
 
@@ -274,7 +274,7 @@ extern "C"
 */
 int main(int argc, char *argv[])
 {
-	srand (time(NULL));
+	srand (time(NULL) + getpid());
 	pcl::PointCloud<pcl::PointXYZ>::Ptr scan(new pcl::PointCloud<pcl::PointXYZ>);
 	pcl::PointCloud<pcl::PointXYZ>::Ptr scan_2(new pcl::PointCloud<pcl::PointXYZ>);
 
@@ -285,12 +285,10 @@ int main(int argc, char *argv[])
 
 	VoxelGrid_homogenise(scan, 0.005f);
 
-	int r = 200;
-	int test_runds = 20;
-	std::vector<std::array<double,4>> rotations_Q = super_fib_list( 5001);
+	int test_runds = 25;
 	for(int i = 0; i < test_runds; i++)
 	{
-		Eigen::Matrix4f transformation = quaternions_to_matrix(rotations_Q[rand() % 5000]);
+		Eigen::Matrix4f transformation = quaternions_to_matrix(Super_Fibonacci(rand(), RAND_MAX));
 		transformation(0,3) = ((double)rand() / (double)RAND_MAX) * 2;
 		transformation(1,3) = ((double)rand() / (double)RAND_MAX) * 2;
 		transformation(2,3) = ((double)rand() / (double)RAND_MAX) * 2;
