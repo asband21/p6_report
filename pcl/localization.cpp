@@ -129,7 +129,7 @@ pcl::PointCloud<pcl::PointXYZ> load_from_csv(char *file_path)
         while (EOF != fscanf(fs,"%lf,%lf,%lf",&x, &y, &z))
                 point_count++;
         fclose(fs);     
-        printf("Amount of points: %d\n", point_count);
+        //printf("Amount of points: %d\n", point_count);
 
         pcl::PointCloud<pcl::PointXYZ> cloud;
         cloud.width    = point_count;
@@ -163,7 +163,7 @@ void VoxelGrid_homogenise(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, double grid
 	
         // Convert back from PCLPointCloud2 to PointXYZ
         pcl::fromPCLPointCloud2(*cloud_filtered, *cloud);
-        std::cout << "Voxel grid filter applied with leaf size: " << grid_size << std::endl;
+        //std::cout << "Voxel grid filter applied with leaf size: " << grid_size << std::endl;
 }
 
 struct icp_return
@@ -280,7 +280,7 @@ int main(int argc, char *argv[])
 
 	char sti_scan[] = "./scan_RT_pointcloud_w_duplicates.csv";
 	*scan = load_from_csv(sti_scan);
-	printf("\n-----------\n");
+	//printf("\n-----------\n");
 
 
 	VoxelGrid_homogenise(scan, 0.005f);
