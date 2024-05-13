@@ -146,7 +146,7 @@ pcl::PointCloud<pcl::PointXYZ> load_from_csv(char *file_path)
 	return cloud;
 }
 
-void VoxelGrid_homogenise(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, double grid_size = 0.001f)
+void VoxelGrid_homogenise(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, double grid_size = 0.001f, bool verbos = false)
 {
         pcl::PCLPointCloud2::Ptr cloud2(new pcl::PCLPointCloud2());
         pcl::PCLPointCloud2::Ptr cloud_filtered(new pcl::PCLPointCloud2());
@@ -162,7 +162,8 @@ void VoxelGrid_homogenise(pcl::PointCloud<pcl::PointXYZ>::Ptr cloud, double grid
 	
         // Convert back from PCLPointCloud2 to PointXYZ
         pcl::fromPCLPointCloud2(*cloud_filtered, *cloud);
-        std::cout << "Voxel grid filter applied with leaf size: " << grid_size << std::endl;
+	if(verbos)
+        	std::cout << "Voxel grid filter applied with leaf size: " << grid_size << std::endl;
 }
 
 struct icp_return
@@ -172,7 +173,7 @@ struct icp_return
 	double FitnessScore;
 };
 
-struct icp_return performICP(const pcl::PointCloud<pcl::PointXYZ>::Ptr &source, const pcl::PointCloud<pcl::PointXYZ>::Ptr &target)
+struct icp_return performICP(const pcl::PointCloud<pcl::PointXYZ>::Ptr &source, const pcl::PointCloud<pcl::PointXYZ>::Ptr &target, bool verbos = false)
 {
 	pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
 	icp.setInputSource(source);
@@ -192,8 +193,11 @@ struct icp_return performICP(const pcl::PointCloud<pcl::PointXYZ>::Ptr &source, 
 	
 	pcl::PointCloud<pcl::PointXYZ> Final;
 	icp.align(Final);
-	std::cout << "has converged:" << icp.hasConverged() << " score: " << icp.getFitnessScore() << std::endl;
-	std::cout << icp.getFinalTransformation() << std::endl;
+	if(verbos)
+	{
+		std::cout << "has converged:" << icp.hasConverged() << " score: " << icp.getFitnessScore() << std::endl;
+		std::cout << icp.getFinalTransformation() << std::endl;
+	}
 	struct icp_return g;
 	g.trans_matrix = icp.getFinalTransformation();
 	g.converged = icp.hasConverged();
