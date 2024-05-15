@@ -173,6 +173,16 @@ struct icp_return
 	double FitnessScore;
 };
 
+void add_cloud_noise(pcl::PointCloud<pcl::PointXYZ>::Ptr &cloud, double delta)
+{
+	for (auto& point: cloud)
+	{
+		point.x += (((double)rand() / (double)RAND_MAX)-0.5)*2*delta
+		point.y += (((double)rand() / (double)RAND_MAX)-0.5)*2*delta
+		point.z += (((double)rand() / (double)RAND_MAX)-0.5)*2*delta
+	}
+}
+
 struct icp_return performICP(const pcl::PointCloud<pcl::PointXYZ>::Ptr &source, const pcl::PointCloud<pcl::PointXYZ>::Ptr &target, bool verbos = false)
 {
 	pcl::IterativeClosestPoint<pcl::PointXYZ, pcl::PointXYZ> icp;
