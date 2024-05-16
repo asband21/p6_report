@@ -10,6 +10,20 @@
 #include <pcl/common/transforms.h>
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/visualization/pcl_visualizer.h>
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+#include <pcl/common/transforms.h>
+#include <Eigen/Core>
+#include <vector>
+#include <array>
+#include <limits>
+#include <iostream>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <cstring>
 
 #ifdef USE_BOOST
 #include <pcl/memory.h>
@@ -241,6 +255,88 @@ Eigen::Matrix4f multi_ICP(const pcl::PointCloud<pcl::PointXYZ>::Ptr &source, con
 	return complete_transformation;
 }
 
+
+Eigen::Matrix4f multi_ICP_multicore(const pcl::PointCloud<pcl::PointXYZ>::Ptr& source, const pcl::PointCloud<pcl::PointXYZ>::Ptr& target, int angles)
+{
+	if (angles <= 0) {
+		fprintf(stderr, "Number of angles must be greater than 0\n");
+		exit(2);
+	}
+	if (angles > 50) {
+		fprintf(stderr, "Number of angles must be less than 50\n Smack the horse, buddy\n");
+		exit(2);
+	}
+
+	std::vector<std::array<double, 4>> rotations_Q = super_fib_list(angles);
+	std::vector<icp_return> icp_lis(angles);
+	pcl::PointCloud<pcl::PointXYZ>::Ptr T(new pcl::PointCloud<pcl::PointXYZ>);
+
+	double min = std::numeric_limits<double>::max();
+	int index = 0;
+
+	const char* shm_name = "/icp_shm";
+	int shm_fd = shm_open(shm_name, O_CREAT | O_RDWR, 0666);
+	if (shm_fd == -1) {
+		perror("shm_open");
+		exit(1);
+	}
+
+	size_t shm_size = angles * sizeof(icp_return);
+	if (ftruncate(shm_fd, shm_size) == -1) {
+		perror("ftruncate");
+		exit(1);
+	}
+
+	void* shm_ptr = mmap(0, shm_size, PROT_READ | PROT_WRITE, MAP_SHARED, shm_fd, 0);
+	if (shm_ptr == MAP_FAILED) {
+		perror("mmap");
+		exit(1);
+	}
+
+	icp_return* shared_data = static_cast<icp_return*>(shm_ptr);
+	std::vector<pid_t> pids;
+
+	for (int i = 0; i < angles; ++i) {
+		pid_t pid = fork();
+		if (pid == 0) {
+			// Child process
+			pcl::PointCloud<pcl::PointXYZ>::Ptr T_local(new pcl::PointCloud<pcl::PointXYZ>);
+			pcl::transformPointCloud(*source, *T_local, quaternions_to_matrix(rotations_Q[i]));
+			icp_return result = performICP(T_local, target);
+			memcpy(&shared_data[i], &result, sizeof(icp_return));
+			munmap(shm_ptr, shm_size);
+			close(shm_fd);
+			exit(0);
+		} else if (pid > 0) {
+			// Parent process
+			pids.push_back(pid);
+		} else {
+			perror("fork");
+			exit(1);
+		}
+	}
+
+	for (pid_t pid : pids) {
+		waitpid(pid, nullptr, 0);
+	}
+
+	for (int i = 0; i < angles; ++i) {
+		icp_lis[i] = shared_data[i];
+		if (icp_lis[i].FitnessScore < min) {
+			index = i;
+			min = icp_lis[i].FitnessScore;
+		}
+	}
+
+	Eigen::Matrix4f complete_transformation = icp_lis[index].trans_matrix * quaternions_to_matrix(rotations_Q[index]);
+
+	munmap(shm_ptr, shm_size);
+	close(shm_fd);
+	shm_unlink(shm_name);
+
+	return complete_transformation;
+}
+
 pcl::PointCloud<pcl::PointXYZ> c_arey_to_pcl_pc(int point_count, double *points)
 {
 
@@ -284,7 +380,8 @@ extern "C"
 
 		VoxelGrid_homogenise(scan_pcl_sprt, 0.005f);
 		VoxelGrid_homogenise(cad_pcl_sprt, 0.005f);
-	        Eigen::Matrix4f transformation = multi_ICP(scan_pcl_sprt, cad_pcl_sprt, 16);
+	        //Eigen::Matrix4f transformation = multi_ICP(scan_pcl_sprt, cad_pcl_sprt, 16);
+	        Eigen::Matrix4f transformation = multi_ICP_multicore(scan_pcl_sprt, cad_pcl_sprt, 16);
                 for (int i = 0; i < 4; i++)
                 {
                         output[4*i + 0] = transformation(i ,0);
