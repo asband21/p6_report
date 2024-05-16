@@ -5,6 +5,7 @@
 #include <pcl/io/pcd_io.h>
 #include <pcl/point_types.h>
 #include <pcl/conversions.h>
+#include <boost/shared_ptr.hpp>
 #include <pcl/registration/icp.h>
 #include <pcl/common/transforms.h>
 #include <pcl/filters/voxel_grid.h>
@@ -262,8 +263,11 @@ extern "C"
                 scan_pcl = c_arey_to_pcl_pc(scan_count, scan);
                 cad_model_pcl = c_arey_to_pcl_pc(cad_count, cad);
 		//skal roter lokalt
-		auto scan_pcl_sprt = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>(scan_pcl);
-        	auto cad_pcl_sprt = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>(cad_model_pcl);
+		//auto scan_pcl_sprt = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>(scan_pcl);
+        	//auto cad_pcl_sprt = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>(cad_model_pcl);
+		auto scan_pcl_sprt = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>(scan_pcl);
+		auto cad_pcl_sprt = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>(cad_model_pcl);
+
 
 		VoxelGrid_homogenise(scan_pcl_sprt, 0.005f);
 		VoxelGrid_homogenise(cad_pcl_sprt, 0.005f);
