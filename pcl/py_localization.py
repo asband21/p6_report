@@ -1,15 +1,39 @@
-import ctypes
-
-# Load the shared library
-lib = ctypes.CDLL('./build/localization.so')  # Use the appropriate path and file name
-
-# Define the function prototype
-lokailasiens = lib.lokailasiens
-lokailasiens.argtypes = [ctypes.POINTER(ctypes.c_double), ctypes.c_int, ctypes.POINTER(ctypes.c_double), ctypes.c_int, ctypes.POINTER(ctypes.c_double)]
-lokailasiens.restype = None
-
-# Example usage
+import socket
 import numpy as np
+import pickle
+
+def send_arrays_and_receive_result(array1, array2, receiver_ip, port):
+    data = pickle.dumps((array1, array2))
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.settimeout(6000)  # Increase the timeout for the connection
+    s.connect((receiver_ip, port))
+    s.sendall(data)
+    s.shutdown(socket.SHUT_WR)  # Indicate that we're done sending
+
+    result = b""
+    while True:
+        try:
+            packet = s.recv(4096)
+            if not packet:
+                break
+            result += packet
+        except socket.timeout:
+            print("Connection timed out")
+            break
+        except Exception as e:
+            print(f"Error receiving data: {e}")
+            break
+    
+    try:
+        result_array = pickle.loads(result)
+    except Exception as e:
+        print(f"Failed to deserialize result: {e}")
+        result_array = None
+
+    s.close()
+    
+    return result_array
+
 def load_csv_to_numpy(filename):
     try:
         # Load the data from CSV file
@@ -20,19 +44,19 @@ def load_csv_to_numpy(filename):
         return None
 
 
-filename_cad = 'reference_pointcloud.csv'
-filename_scan = 'scan_RT_pointcloud_w_duplicates.csv'
-cad = load_csv_to_numpy(filename_cad)
-scan = load_csv_to_numpy(filename_cad)
-# Assuming you have data for 'scan' and 'cad'
-#scan = np.random.rand(100, 3)  # Dummy data
-#cad = np.random.rand(100, 3)   # Dummy data
-output = np.zeros((4, 4), dtype=np.float64)
+if __name__ == "__main__":
+    #data
+    filename_cad = 'reference_pointcloud.csv'
+    filename_scan = 'scan_RT_pointcloud_w_duplicates.csv'
+    cad = load_csv_to_numpy(filename_cad)
+    scan = load_csv_to_numpy(filename_cad)
 
-# Call the C function
-lokailasiens(output.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-        scan.shape[0], scan.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
-        cad.shape[0], cad.ctypes.data_as(ctypes.POINTER(ctypes.c_double)))
 
-print(output)
-
+    receiver_ip = '127.0.0.1'  # Replace with the actual IP address
+    port = 65432  # Replace with the actual port
+    
+    result = send_arrays_and_receive_result(cad, scan, receiver_ip, port)
+    if result is not None:
+        print(result)
+    else:
+        print("Failed to receive the result")
