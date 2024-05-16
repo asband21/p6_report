@@ -2,6 +2,7 @@ import ctypes
 import socket
 import numpy as np
 import pickle
+import zlib
 import time
 
 # Load the shared library
@@ -34,7 +35,8 @@ def receive_arrays_and_send_result(port):
             data += packet
         
         try:
-            scan, cad = pickle.loads(data)
+            decompressed_data = zlib.decompress(data)  # Decompress the received data
+            scan, cad = pickle.loads(decompressed_data)
         except Exception as e:
             print(f"Failed to deserialize data: {e}")
             conn.close()
@@ -54,8 +56,8 @@ def receive_arrays_and_send_result(port):
         print(f"Computation finished in {end_time - start_time} seconds")
         
         result_array = output
-        result_data = pickle.dumps(result_array)
-        conn.sendall(result_data)
+        compressed_result = zlib.compress(pickle.dumps(result_array))  # Compress the result before sending
+        conn.sendall(compressed_result)
         conn.close()
         print("Result sent back to the client")
 
