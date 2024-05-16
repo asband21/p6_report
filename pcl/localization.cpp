@@ -11,12 +11,11 @@
 #include <pcl/filters/voxel_grid.h>
 #include <pcl/visualization/pcl_visualizer.h>
 
-#ifdef USE_BOOST
-#include <boost/make_shared.hpp>
-#else
+#ifdef USE_PCL_MEMORY
 #include <pcl/memory.h>
+#else
+#include <boost/make_shared.hpp>
 #endif
-
 
 Eigen::Matrix4f quaternions_to_matrix(std::array<double,4> q, bool normalise = true)
 {
@@ -275,13 +274,13 @@ extern "C"
 		//auto scan_pcl_sprt = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>(scan_pcl);
 		//auto cad_pcl_sprt = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>(cad_model_pcl);
 
-		#ifdef USE_BOOST
-        		auto scan_pcl_sprt = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>(scan_pcl);
-		        auto cad_pcl_sprt = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>(cad_model_pcl);
-		#else
-		        auto scan_pcl_sprt = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>(scan_pcl);
-		        auto cad_pcl_sprt = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>(cad_model_pcl);
-		#endif
+#ifdef USE_PCL_MEMORY
+		auto scan_pcl_sprt = pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>(scan_pcl);
+		auto cad_pcl_sprt = pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>(cad_model_pcl);
+#else
+		auto scan_pcl_sprt = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>(scan_pcl);
+		auto cad_pcl_sprt = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>(cad_model_pcl);
+#endif
 
 		VoxelGrid_homogenise(scan_pcl_sprt, 0.005f);
 		VoxelGrid_homogenise(cad_pcl_sprt, 0.005f);

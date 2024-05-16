@@ -13,18 +13,18 @@ link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
 # Check for boost
-find_package(Boost QUIET)
-if (Boost_FOUND)
-    set(USE_BOOST ON)
-    add_definitions(-DUSE_BOOST)
+# Check for pcl/memory.h
+include(CheckIncludeFile)
+check_include_file("pcl/memory.h" HAVE_PCL_MEMORY)
+if (HAVE_PCL_MEMORY)
+    add_definitions(-DUSE_PCL_MEMORY)
 else()
-    # Check for pcl/memory.h
-    include(CheckIncludeFile)
-    check_include_file("pcl/memory.h" HAVE_PCL_MEMORY)
-    if (HAVE_PCL_MEMORY)
-        add_definitions(-DHAVE_PCL_MEMORY)
+    # Check for Boost if pcl/memory.h is not found
+    find_package(Boost REQUIRED)
+    if (Boost_FOUND)
+        add_definitions(-DUSE_BOOST)
     else()
-        message(FATAL_ERROR "Neither boost nor pcl/memory.h is available")
+        message(FATAL_ERROR "Neither pcl/memory.h nor Boost is available")
     endif()
 endif()
 
