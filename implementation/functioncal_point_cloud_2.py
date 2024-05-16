@@ -4,6 +4,15 @@ import time
 
 per_alo = True
 
+def load_csv_to_numpy(filename):
+    try:
+        # Load the data from CSV file
+        data = np.genfromtxt(filename, delimiter=',')
+        return data
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return None
+
 def get_camara_teansformaisen():
     transformation_matrix = np.array([[1, 0, 0, 0],[0, 1, 0, 0],[0, 0, 1, 1],[0, 0, 0, 1]])
     return transformation_matrix
@@ -22,6 +31,9 @@ pc = rs.pointcloud()
 config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
 
 pipeline.start(config)
+
+filename_cad = './gig_AAUTest97_ransed.csv'
+cad = load_csv_to_numpy(filename_cad)
 
 num_iterations = 50
 if per_alo:

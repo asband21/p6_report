@@ -2,9 +2,9 @@ import csv
 import numpy
 from stl import mesh
 
-ref_3d = mesh.Mesh.from_file('ref.stl')
+ref_3d = mesh.Mesh.from_file('./gig_AAUTest97.STL')
 
-with open('pungsky_med_dobbler.csv', 'w', newline='') as file:
+with open('./gig_AAUTest97.csv', 'w', newline='') as file:
     writer = csv.writer(file)
     #writer = csv.writer(file, fieldnames=["x", "y", "z"])
     for pol in ref_3d:
