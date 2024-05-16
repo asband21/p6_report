@@ -1,5 +1,7 @@
 import pyrealsense2 as rs
 import numpy as np
+import socket
+import pickle
 import time
 
 per_alo = True
@@ -18,6 +20,38 @@ def get_camara_teansformaisen():
     return transformation_matrix
 
 # Initialize the RealSense pipeline
+
+def send_arrays_and_receive_result(array1, array2, receiver_ip, port):
+    data = pickle.dumps((array1, array2))
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.settimeout(6000)  # Increase the timeout for the connection
+    s.connect((receiver_ip, port))
+    s.sendall(data)
+    s.shutdown(socket.SHUT_WR)  # Indicate that we're done sending
+
+    result = b"" 
+    while True:
+        try:
+            packet = s.recv(4096)
+            if not packet:
+                break
+            result += packet
+        except socket.timeout:
+            print("Connection timed out")
+            break
+        except Exception as e:
+            print(f"Error receiving data: {e}")
+            break
+        
+    try:
+        result_array = pickle.loads(result)
+    except Exception as e:
+        print(f"Failed to deserialize result: {e}")
+        result_array = None
+
+    s.close()
+        
+    return result_array
 
 def filter_points_inside_box(box_min, box_max, points):
     inside_box = np.all((points >= box_min) & (points <= box_max), axis=1)
@@ -74,9 +108,18 @@ try:
     print(all_transformed_vertices.shape)
     boks_min = np.array([0, 0, 0])
     boks_max = np.array([1.1, 1.1, 1.1])
-    all_transformed_vertices = filter_points_inside_box(boks_min, boks_max, all_transformed_vertices)
-    print(all_transformed_vertices)
-    print(all_transformed_vertices.shape)
+    scan = filter_points_inside_box(boks_min, boks_max, all_transformed_vertices)
+    print(scan)
+    print(scan.shape)
     #pipeline.stop()
+    
+    receiver_ip = '127.0.0.1'  # Replace with the actual IP address
+    port = 65432  # Replace with the actual port
+    result = send_arrays_and_receive_result(cad, scan, receiver_ip, port)
+    if result is not None:
+        print(result)
+    else:
+        print("Failed to receive the result")
+
 finally:
     pipeline.stop()
