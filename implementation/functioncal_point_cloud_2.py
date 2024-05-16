@@ -2,23 +2,36 @@ import pyrealsense2 as rs
 import numpy as np
 import time
 
+per_alo = True
+
 def get_camara_teansformaisen():
     transformation_matrix = np.array([[1, 0, 0, 0],[0, 1, 0, 0],[0, 0, 1, 1],[0, 0, 0, 1]])
     return transformation_matrix
 
 # Initialize the RealSense pipeline
+
+def filter_points_inside_box(box_min, box_max, points):
+    inside_box = np.all((points >= box_min) & (points <= box_max), axis=1)
+    filtered_points = points[inside_box]
+    return filtered_points
+
+
 pipeline = rs.pipeline()
 config = rs.config()
 pc = rs.pointcloud()
 config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
-config.enable_stream(rs.stream.color, 640, 480, rs.format.rgb8, 30)
 
 pipeline.start(config)
 
-all_transformed_vertices = np.empty((0, 3))
+num_iterations = 50
+if per_alo:
+    num_points_per_frame = 640 * 480  # 307200# Pre-allocate an array for all transformed vertices
+    all_transformed_vertices = np.empty((num_iterations * num_points_per_frame, 3), dtype=np.float32)
+else:
+    all_transformed_vertices = np.empty((0, 3))
 
 try:
-    for i in range(50):
+    for i in range(num_iterations):
         frames = pipeline.wait_for_frames()
         depth_frame = frames.get_depth_frame()
         if not depth_frame:
@@ -32,14 +45,24 @@ try:
         homogeneous_vertices = np.hstack((vertices, np.ones((vertices.shape[0], 1))))
         transformed_homogeneous_vectors = homogeneous_vertices @ get_camara_teansformaisen().T
         transformed_vertices = transformed_homogeneous_vectors[:, :3]
-        all_transformed_vertices = np.vstack((all_transformed_vertices, transformed_vertices))
+        if per_alo:
+            start_index = i * num_points_per_frame
+            end_index = start_index + num_points_per_frame
+            all_transformed_vertices[start_index:end_index, :] = transformed_vertices
+        else:
+            all_transformed_vertices = np.vstack((all_transformed_vertices, transformed_vertices))
         #all_transformed_vertices = np.concatenate((all_transformed_vertices, transformed_vertices), axis=1)
         ##print(transformed_vertices)
         print(i)
         print(transformed_vertices.shape)
 
-        #time.sleep(1)
+        time.sleep(0.1)
 
+    print(all_transformed_vertices)
+    print(all_transformed_vertices.shape)
+    boks_min = np.array([0, 0, 0])
+    boks_max = np.array([1.1, 1.1, 1.1])
+    all_transformed_vertices = filter_points_inside_box(boks_min, boks_max, all_transformed_vertices)
     print(all_transformed_vertices)
     print(all_transformed_vertices.shape)
     #pipeline.stop()
