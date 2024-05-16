@@ -22,6 +22,21 @@ def get_camara_teansformaisen():
 # Initialize the RealSense pipeline
 
 def send_arrays_and_receive_result(array1, array2, receiver_ip, port):
+    if array1.shape[1] != 3:
+        print("array1 Wrong shape.")
+        exit()
+    if array2.shape[1] != 3:
+        print("array1 Wrong shape.")
+        exit()
+    if array1.shape[0] < 0 or array1.shape[0] > 100000000:
+        print(array1.shape)
+        print(array1.shape[0])
+        print("array1 have the wrong number of rows.")
+        exit()
+    if array2.shape[0] < 0 or array2.shape[0] > 100000000:
+        print("array2 have the wrong number of rows.")
+        exit()
+
     data = pickle.dumps((array1, array2))
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.settimeout(6000)  # Increase the timeout for the connection
@@ -109,11 +124,13 @@ try:
     boks_min = np.array([0, 0, 0])
     boks_max = np.array([1.1, 1.1, 1.1])
     scan = filter_points_inside_box(boks_min, boks_max, all_transformed_vertices)
-    print(scan)
+    print("scan")
     print(scan.shape)
+    print("cad")
+    print(cad)
     #pipeline.stop()
     
-    receiver_ip = '127.0.0.1'  # Replace with the actual IP address
+    receiver_ip = '100.95.44.35'  # Replace with the actual IP address
     port = 65432  # Replace with the actual port
     result = send_arrays_and_receive_result(cad, scan, receiver_ip, port)
     if result is not None:
