@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 project(point_cloud_localization)
 
 option(BUILD_PYTHON_BINDING "Build the Python binding." OFF)
+option(USE_BOOST "Use Boost for shared pointers" OFF)  
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
@@ -12,20 +13,10 @@ include_directories(${PCL_INCLUDE_DIRS})
 link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
-# Check for boost
-# Check for pcl/memory.h
-include(CheckIncludeFile)
-check_include_file("pcl/memory.h" HAVE_PCL_MEMORY)
-if (HAVE_PCL_MEMORY)
-    add_definitions(-DUSE_PCL_MEMORY)
-else()
-    # Check for Boost if pcl/memory.h is not found
+
+if(USE_BOOST)
     find_package(Boost REQUIRED)
-    if (Boost_FOUND)
-        add_definitions(-DUSE_BOOST)
-    else()
-        message(FATAL_ERROR "Neither pcl/memory.h nor Boost is available")
-    endif()
+    add_definitions(-DUSE_BOOST)
 endif()
 
 if(BUILD_PYTHON_BINDING)
