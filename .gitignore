@@ -1,0 +1,7 @@
+#pcl byg
+# Ignore build directory in pcl
+pcl/build/
+visualtering/build/
+visualtering_2/build/
+pybind11/build/
+
