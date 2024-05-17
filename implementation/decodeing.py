@@ -1,7 +1,6 @@
 
-import struct, socket,math
-from copy import copy
-from time import sleep
+import struct, socket
+from copy import copy 
 
 class Parser(object):
  
@@ -9,7 +8,7 @@ class Parser(object):
         self.version = (0, 0)   
         self._dataqueue = bytes() 
         self.host = "192.168.0.2" 
-        secondary_port = 30002  #Secondary client interface on Universal Robots
+        secondary_port = 30001 #Secondary client interface on Universal Robots
         self._s_secondary = socket.create_connection((self.host, secondary_port), timeout=0.5)  # the timeout gives a chance to stop the thread
     
     def parse(self, data):
@@ -91,11 +90,13 @@ class Parser(object):
                         allData["keyMessage"] = self._get_data(pdata, "!iBQbb iiBAcAc", ("size", "type", "timestamp", "source", "robotMessageType", "code", "argument", "titleSize", "messageTitle", "messageText"))
                     elif tmp["robotMessageType"] == 5:
                         allData["keyMessage"] = self._get_data(pdata, "!iBQbb iiAc", ("size", "type", "timestamp", "source", "robotMessageType", "code", "argument", "messageText"))
-                    else:
-                        print("Message type parser not implemented %s" % (tmp))
-                else:
+                    """ else:
+                
+                     print("Message type parser not implemented %s" % (tmp)) 
+                    """ 
+                """  else:
                     print("Unknown packet type %s with size %s" % (ptype, psize))
-           
+                """
             return allData
 
 
@@ -125,8 +126,9 @@ class Parser(object):
                     arraysize = len(tmpdata)
                 else:  # size should be given in last element
                     asn = names[i - 1]
-                    if not asn.endswith("Size"):
-                        print("Error, array without size ! %s %s" % (asn, i))
+                    if not asn.endswith("Size"): 
+                        None
+                        #print("Error, array without size ! %s %s" % (asn, i))
                     else:
                         arraysize = d[asn]
                 d[names[i]] = tmpdata[0:arraysize]
@@ -137,8 +139,8 @@ class Parser(object):
             else:
                 fmtsize = struct.calcsize(fmt[j])
                 # print "reading ", f , i, j,  fmtsize, len(tmpdata)
-                if len(tmpdata) < fmtsize:  # seems to happen on windows
-                    print("Error, length of data smaller than advertized: ", len(tmpdata), fmtsize, "for names ", names, f, i, j)
+                #if len(tmpdata) < fmtsize:  # seems to happen on windows
+                   # print("Error, length of data smaller than advertized: ", len(tmpdata), fmtsize, "for names ", names, f, i, j)
                 d[names[i]] = struct.unpack("!" + f, tmpdata[0:fmtsize])[0]
                 # print names[i], d[names[i]]
                 tmpdata = tmpdata[fmtsize:]
@@ -153,14 +155,15 @@ class Parser(object):
             """
             Read first 5 bytes and return complete packet
             """
-            if len(data) < 5:
-                print("Packet size %s smaller than header size (5 bytes)" % len(data))
+            if len(data) < 5: 
+                None
+                #print("Packet size %s smaller than header size (5 bytes)" % len(data))
             else:
                 psize, ptype = self.get_header(data)
-                if psize < 5:
-                    print("Error, declared length of data smaller than its own header(5): ", psize)
-                elif psize > len(data):
-                    print("Error, length of data smaller (%s) than declared (%s)" % (len(data), psize))
+                #if psize < 5:
+                   # print("Error, declared length of data smaller than its own header(5): ", psize)
+                    #elif psize > len(data):
+                    #print("Error, length of data smaller (%s) than declared (%s)" % (len(data), psize))
             return psize, ptype, data[:psize], data[psize:]
 
     def find_first_packet(self, data):
@@ -177,18 +180,18 @@ class Parser(object):
                     data = data[1:]
                     counter += 1
                     if counter > limit:
-                        print("tried %s times to find a packet in data, advertised packet size: %s, type: %s" % (counter, psize, ptype))
-                        print("Data length: %s" % (len(data)))
+                       # print("tried %s times to find a packet in data, advertised packet size: %s, type: %s" % (counter, psize, ptype))
+                        #print("Data length: %s" % (len(data)))
                         limit = limit * 10
                 elif len(data) >= psize:
-                    print("Got packet with size %s and type %s" % (psize, ptype))
-                    if counter:
-                        print("Remove %s bytes of garbage at begining of packet" % (counter))
+                    #print("Got packet with size %s and type %s" % (psize, ptype))
+                    #if counter:
+                       # print("Remove %s bytes of garbage at begining of packet" % (counter))
                     # ok we we have somehting which looks like a packet"
                     return (data[:psize], data[psize:])
                 else:
                     # packet is not complete
-                    print("Packet is not complete, advertised size is %s, received size is %s, type is %s"% ( psize, len(data), ptype))
+                    # print("Packet is not complete, advertised size is %s, received size is %s, type is %s"% ( psize, len(data), ptype))
                     return None
             else:
                 # self.logger.debug("data smaller than 5 bytes")
@@ -206,27 +209,29 @@ class Parser(object):
                 # self.logger.debug("found packet of size {}".format(len(ans[0])))
                 return ans[0]
             else:
-                # self.logger.debug("Could not find packet in received data")  
-                tmp = self._s_secondary.recv(1024)  
-                self._dataqueue += tmp  
-                   
-                
-                
-                   
-                
- 
-program=Parser() 
+                # self.logger.debug("Could not find packet in received data")
+                tmp = self._s_secondary.recv(1024)
+                self._dataqueue += tmp 
 
-all_data=program.parse(program._get_packge())    
+program=Parser()    
+all_data=program.parse(program._get_packge())   
 
+    
+""" 
+if __name__ == '__main__' :  
+    while  True: 
+        all_data=program.parse(program._get_packge())   
+        #print(all_data)
+        if True:  
+            joints = all_data['JointData'] 
+            robot_pose= all_data['CartesianInfo']  
+            robot_coordinates =robot_pose["X"], robot_pose["Y"], robot_pose["Z"], robot_pose["Rx"], robot_pose["Ry"], robot_pose["Rz"]  
+            robot_offset=robot_pose["tcpOffsetX"], robot_pose["tcpOffsetY"],robot_pose["tcpOffsetZ"] , robot_pose["tcpOffsetRx"], robot_pose["tcpOffsetRy"], robot_pose["tcpOffsetRz"] 
+            robot_joints=all_data["JointData"]['q_actual0'],all_data["JointData"]['q_actual1'],all_data["JointData"]['q_actual2'],all_data["JointData"]['q_actual3'],all_data["JointData"]['q_actual4'],all_data["JointData"]['q_actual5']
+                        
+           
+            print(robot_joints) 
+            #print(robot_coordinates)
+            #print("Angles =  %s %s %s %s %s %s " % (math.degrees(joints['q_actual0']),math.degrees(joints['q_actual1']),math.degrees(joints['q_actual2']),math.degrees(joints['q_actual3']),math.degrees(joints['q_actual4']),math.degrees(joints['q_actual5']))) 
 
-
-if __name__ == '__main__' :
-    print(all_data)
-    if False: 
-        joints = all_data['JointData']
-        print(joints)
-        print("radians of joints = %s %s %s %s %s %s " %(joints['q_actual0'],joints['q_actual1'],joints['q_actual2'],joints['q_actual3'],joints['q_actual4'],joints['q_actual5'] ) )
-        print("Angles =  %s %s %s %s %s %s " % (math.degrees(joints['q_actual0']),math.degrees(joints['q_actual1']),math.degrees(joints['q_actual2']),math.degrees(joints['q_actual3']),math.degrees(joints['q_actual4']),math.degrees(joints['q_actual5']))) 
-
-
+"""
