@@ -16,11 +16,6 @@ def load_csv_to_numpy(filename):
         print(f"An error occurred: {e}")
         return None
 
-def get_camara_teansformaisen():
-    transformation_matrix = np.array([[1, 0, 0, 0],[0, 1, 0, 0],[0, 0, 1, 1],[0, 0, 0, 1]])
-    return transformation_matrix
-
-# Initialize the RealSense pipeline
 
 def send_arrays_and_receive_result(array1, array2, receiver_ip, port):
     if array1.shape[1] != 3:
@@ -73,7 +68,13 @@ def filter_points_inside_box(box_min, box_max, points):
     filtered_points = points[inside_box]
     return filtered_points
 
-def scan_mod():
+def get_camara_teansformaisen_internel():
+    transformation_matrix = np.array([[1, 0, 0, 0],[0, 1, 0, 0],[0, 0, 1, 1],[0, 0, 0, 1]])
+    return transformation_matrix
+
+def scan_mod(cam_fun = None):
+    if cam_fun is None:
+        cam_fun = get_camara_teansformaisen_internel # Default to function b if no function is passed
     pipeline = rs.pipeline()
     config = rs.config()
     pc = rs.pointcloud()
@@ -104,7 +105,7 @@ def scan_mod():
             vertices = np.asarray(points.get_vertices()).view(np.float32).reshape(-1, 3)
             #vertices = np.stack((vertices['f0'], vertices['f1'], vertices['f2']), axis=-1)
             homogeneous_vertices = np.hstack((vertices, np.ones((vertices.shape[0], 1))))
-            transformed_homogeneous_vectors = homogeneous_vertices @ get_camara_teansformaisen().T
+            transformed_homogeneous_vectors = homogeneous_vertices @ cam_fun().T
             transformed_vertices = transformed_homogeneous_vectors[:, :3]
             if per_alo:
                 start_index = i * num_points_per_frame
