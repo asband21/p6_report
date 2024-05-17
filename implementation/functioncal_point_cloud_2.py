@@ -137,9 +137,10 @@ def scan_mod():
             print(result)
         else:
             print("Failed to receive the result")
+        return result
 
     finally:
         pipeline.stop()
 
 if __name__ == "__main__":
-    scan_mod()
+    trans = scan_mod()
