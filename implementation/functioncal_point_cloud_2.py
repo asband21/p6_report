@@ -85,7 +85,7 @@ def weld_item_to_globel_transformaisen(cam_fun = None):
     filename_cad = './gig_AAUTest97_ransed.csv'
     cad = load_csv_to_numpy(filename_cad)
 
-    num_iterations = 5
+    num_iterations = 25
     if per_alo:
         num_points_per_frame = 640 * 480  # 307200# Pre-allocate an array for all transformed vertices
         all_transformed_vertices = np.empty((num_iterations * num_points_per_frame, 3), dtype=np.float64)
