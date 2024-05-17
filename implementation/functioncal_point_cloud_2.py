@@ -72,7 +72,7 @@ def get_camara_teansformaisen_internel():
     transformation_matrix = np.array([[1, 0, 0, 0],[0, 1, 0, 0],[0, 0, 1, 1],[0, 0, 0, 1]])
     return transformation_matrix
 
-def scan_mod(cam_fun = None):
+def weld_item_to_globel_transformaisen(cam_fun = None):
     if cam_fun is None:
         cam_fun = get_camara_teansformaisen_internel # Default to function b if no function is passed
     pipeline = rs.pipeline()
