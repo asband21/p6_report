@@ -43,18 +43,32 @@ def receive_arrays_and_send_result(port):
             continue
         
         output = np.zeros((4, 4), dtype=np.float64)
-        
+
+        # Ensure arrays are contiguous
+        cad = np.ascontiguousarray(cad, dtype=np.float64)
+        scan = np.ascontiguousarray(scan, dtype=np.float64)
+
+        # Check if the arrays are contiguous
+        assert cad.flags['C_CONTIGUOUS'], "cad array is not contiguous"
+        assert scan.flags['C_CONTIGUOUS'], "scan array is not contiguous"
+
         # Simulate long computation
         print("Starting computation...")
         start_time = time.time()
+        print("scan shape:", scan.shape)
+        print("cad shape:", cad.shape)
+        print("Last element of cad:", cad[-1])
+
+        # Call the C++ function via ctypes
         lokailasiens(
             output.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
             scan.shape[0], scan.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
             cad.shape[0], cad.ctypes.data_as(ctypes.POINTER(ctypes.c_double))
         )
+
         end_time = time.time()
         print(f"Computation finished in {end_time - start_time} seconds")
-        
+
         result_array = output
         compressed_result = zlib.compress(pickle.dumps(result_array))  # Compress the result before sending
         conn.sendall(compressed_result)
@@ -64,4 +78,3 @@ def receive_arrays_and_send_result(port):
 if __name__ == "__main__":
     port = 65432  # Replace with the actual port
     receive_arrays_and_send_result(port)
-
