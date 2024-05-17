@@ -28,11 +28,13 @@ Done:
 from robolink import *  # Import the RoboDK API
 from robodk import *    # Import the RoboDK API constants  
 from robodk.robomath import * 
-from decodeing import Parser
+from decodeing import Parser 
+from functioncal_point_cloud_2 import weld_item_to_globel_transformaisen
 import re  
 import math 
-import keyboard
-
+import keyboard 
+import numpy as np
+UR_Data=Parser()
 # Start RoboDK 
 RDK = Robolink()  
 RDK.Command("UseGPU",1) # set the GPU to true, so the simulation uses the GPU for rendering
@@ -46,11 +48,12 @@ collisions_bool = True  # set to True to enable collision detection, !!! not nes
 def SetUp(): 
 
     # setup the station
-    station_path = "roboDK_simulation.rdk"
+    station_path = "roboDK_simulation_mod.rdk"
     station = RDK.AddFile(station_path)  # Load a station
     robot = RDK.Item('', ITEM_TYPE_ROBOT) # if the robot is not provided, the first available robot is used  
     path_settings = RDK.Item('Placement(Update)', ITEM_TYPE_MACHINING) # get the path settings from the simulation
     target = RDK.Item('WeldItemFrame',ITEM_TYPE_FRAME)  # get the target from the simulation
+    camera = RDK.Item('D435_Solid',ITEM_TYPE_OBJECT)  # get the camera from the simulation
     Global_frame = RDK.Item('GlobalFrame',ITEM_TYPE_FRAME)  # get the global frame from the simulation
     
     
@@ -70,13 +73,14 @@ def SetUp():
     # Set the speed of the robot, simulation and enambe redering
     #robot.setSpeed(1) # Set the speed of the robot to 100 mm/s
     RDK.Render(True) # render the simulation
-    #RDK.setSimulationSpeed(0.015) # set the simulation speed t
+    RDK.setSimulationSpeed(1) # set the simulation speed t
     print("Simulations speed : %s " % RDK.SimulationSpeed())
 
     robot.setParam("ShowWorkspace",2) # Work space of the robot given from the TCP 
 
 
-    return robot,path_settings,program,target,Global_frame
+    return robot,path_settings,program,target,Global_frame,camera
+#  -23.000 , 14.000 , 17.300 ,0.000 ,0.000 ,-0.350
 
 
 def  Update(path_settings,robot,program,target) :  
@@ -129,12 +133,11 @@ def  Update(path_settings,robot,program,target) :
     status = test[3] # status of the path intagerty
     if status == 0: 
         print("The path may have not been updated yet?")  
-        RDK.CloseRoboDK()
     if status == 1:  
         print("The path has been updated") 
     if status == 2: 
         print("The path is not valid")  
-        RDK.CloseRoboDK() 
+       
        
          
      
@@ -195,6 +198,64 @@ def Collision_mapping(robot_target,weld_targe_external) :
             return TO_home_name,TO_weld_name
 
 
+def robot_Mimice_mode(robot) : 
+    
+    all_data=UR_Data.parse(UR_Data._get_packge())  
+    robot.setJoints([math.degrees(all_data['JointData']['q_actual0']),math.degrees(all_data['JointData']['q_actual1']),math.degrees(all_data['JointData']['q_actual2']),math.degrees(all_data['JointData']['q_actual3']),math.degrees(all_data['JointData']['q_actual4']),math.degrees(all_data['JointData']['q_actual5'])]) # set the joints of the robot to the joints of the program
+    
+
+def Scaning_Mode(robot,camera):  
+    """  
+    Fetches the data from the Decoding.py script and sets the simulations robot's joints to that of the real robot. With the robot correnctly placed the RDK.camera.Pose() is returned
+    """ 
+    robot_Mimice_mode(robot) # update the robot joints to the real robot joints
+    return camera.Pose()
+    
+
+def weld_path_selction(robot): 
+    """ The user selects the weld seam  with the robot, by recording  the TCP postion in the format of (x,y,z, roll,pitch,yaw)"""  
+    robot_Mimice_mode(robot) # update the robot joints to the real robot joints   
+    return Pose_2_TxyzRxyz(robot.Pose()) # return the pose of the robot
+    
+
+def matrix_to_quaternion(matrix):
+    # Ensure the matrix is a numpy array
+    matrix = np.array(matrix)
+    
+    # Extract the 3x3 rotation matrix
+    R = matrix[:3, :3]
+    
+    # Compute the trace of the matrix
+    trace = np.trace(R)
+    
+    if trace > 0:
+        S = np.sqrt(trace + 1.0) * 2
+        qw = 0.25 * S
+        qx = (R[2, 1] - R[1, 2]) / S
+        qy = (R[0, 2] - R[2, 0]) / S
+        qz = (R[1, 0] - R[0, 1]) / S
+    elif (R[0, 0] > R[1, 1]) and (R[0, 0] > R[2, 2]):
+        S = np.sqrt(1.0 + R[0, 0] - R[1, 1] - R[2, 2]) * 2
+        qw = (R[2, 1] - R[1, 2]) / S
+        qx = 0.25 * S
+        qy = (R[0, 1] + R[1, 0]) / S
+        qz = (R[0, 2] + R[2, 0]) / S
+    elif R[1, 1] > R[2, 2]:
+        S = np.sqrt(1.0 + R[1, 1] - R[0, 0] - R[2, 2]) * 2
+        qw = (R[0, 2] - R[2, 0]) / S
+        qx = (R[0, 1] + R[1, 0]) / S
+        qy = 0.25 * S
+        qz = (R[1, 2] + R[2, 1]) / S
+    else:
+        S = np.sqrt(1.0 + R[2, 2] - R[0, 0] - R[1, 1]) * 2
+        qw = (R[1, 0] - R[0, 1]) / S
+        qx = (R[0, 2] + R[2, 0]) / S
+        qy = (R[1, 2] + R[2, 1]) / S
+        qz = 0.25 * S
+    
+    # Return the quaternion as a numpy array
+    return np.array([qw, qx, qy, qz])
+
 
 def Main() :  
     """  
@@ -202,46 +263,34 @@ def Main() :
     """  
     
     try:  
-        UR_Data=Parser()   
-        robot,path_settings,program,target,Global_Frame=SetUp() # setup the simulation     
+       
+        robot,path_settings,program,target,Global_Frame,camera=SetUp() # setup the simulation     
         
-        # Mimic the movement of the robots moment for pointcloud  
-        print("press n to leave the loop") 
+        # Mimic the movement of the robots moment for the pointcloud  
+        robot_Mimice_mode(robot) # update the robot joints to the real robot joints   
+       
+       # The camera pose is returned from the scaning mode 
+
+        def replacement_camere_function():
+            return (Mat.toNumpy(Scaning_Mode(robot,camera)))
         
-        while True: 
-            all_data=UR_Data.parse(UR_Data._get_packge())  
-            #print([math.degrees(all_data['JointData']['q_actual0']),math.degrees(all_data['JointData']['q_actual1']),math.degrees(all_data['JointData']['q_actual2']),math.degrees(all_data['JointData']['q_actual3']),math.degrees(all_data['JointData']['q_actual4']),math.degrees(all_data['JointData']['q_actual5'])]) # set the joints of the robot to the joints of the program
-            robot.setJoints([math.degrees(all_data['JointData']['q_actual0']),math.degrees(all_data['JointData']['q_actual1']),math.degrees(all_data['JointData']['q_actual2']),math.degrees(all_data['JointData']['q_actual3']),math.degrees(all_data['JointData']['q_actual4']),math.degrees(all_data['JointData']['q_actual5'])]) # set the joints of the robot to the joints of the program
-            
-            #x,y,z,Rx,Ry,Rz = all_data['CartesianInfo']['X'],all_data['CartesianInfo']['Y'],all_data['CartesianInfo']['Z'],all_data['CartesianInfo']['Rx'],all_data['CartesianInfo']['Ry'],all_data['CartesianInfo']['Rz']
-            #robot.setJoints
-            #print("Joints: %s" % robot.Joints())  
-             
-            if keyboard.is_pressed('n'):  
-                break
-            
-        target.setPose(TxyzRxyz_2_Pose([967.629,524.114,15.000,0,0,0])) # set the target to new coordinates given from the camera    
 
-        while True: 
-            #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!# 
-            # The user selects the weld object in the simulation and the weld seam to the weld object in the simulation  
-
-            #When done selecting, place the robot in any desired postion
-
-            """ 
-            i = 0 
-            drag_coordianes = {}
-            drag_joints = {} 
-            drag_coordianes[i]=robot.Pose() 
-            drag_joints[i]= robot.Joints()   
-            i = i+1   
-            """
-                
-            #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!# 
-            # Then Mads code is used on the location data and the coordiantes are used to select a path for the robot to weld
-            #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!# 
-            break # have to return the weld rigth weld path and the postion the postion is left in the simulation
+        procced_weld_obj_pose=weld_item_to_globel_transformaisen(replacement_camere_function)  
+        print(f"The weld object was found at the following pose: {procced_weld_obj_pose}")
+        if procced_weld_obj_pose is None: 
+            print("The weld object was not found")   
             
+        else: 
+            qw,qx,qy,qz=matrix_to_quaternion(procced_weld_obj_pose)  
+            target.setPose(quaternion_2_pose(qw,qx,qy,qz)) # set the target to new coordinates given from the camera    
+        
+
+        TCP_postion=weld_path_selction(robot)
+        
+        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!# 
+        # Then Mads code is used on the location data and the coordiantes are used to select a path for the robot to weld
+        #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!# 
+    
         #This set the target in the simulation, this is where the location code have to inseret a X,Y,Z,Rx,Ry,Rz 
         
         Update(path_settings,robot,program,target) # update the path and robot settings  
@@ -340,9 +389,7 @@ def Main() :
             TO_home_program.WaitFinished()  
             
             
-            if keyboard.is_pressed('q'): 
-                 break
-            
+           
         """ 
         while True: 
             if TO_weld_program.Busy() == 1: 
