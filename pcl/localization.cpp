@@ -337,38 +337,27 @@ Eigen::Matrix4f multi_ICP_multicore(const pcl::PointCloud<pcl::PointXYZ>::Ptr& s
 	return complete_transformation;
 }
 
-pcl::PointCloud<pcl::PointXYZ> c_arey_to_pcl_pc(int point_count, double *points, bool debug = false)
+pcl::PointCloud<pcl::PointXYZ> c_array_to_pcl_pc(int point_count, double *points, bool debug = false)
 {
+    pcl::PointCloud<pcl::PointXYZ> cloud;
+    cloud.width    = point_count;
+    cloud.height   = 1;
+    cloud.is_dense = false;
+    cloud.resize(cloud.width * cloud.height);
 
-	//auto cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
-        pcl::PointCloud<pcl::PointXYZ> cloud;
-        cloud.width    = point_count;
-        cloud.height   = 1;
-        cloud.is_dense = false;
-        cloud.resize(cloud.width * cloud.height);
-        int i = 0;
-	int h;
-	printf("point count %d i %d \n",point_count, i);
-	for (int i = 0; i < point_count; ++i)
-	{
-		cloud.points[i].x = points[i * 3];
-		cloud.points[i].y = points[i * 3 + 1];
-		cloud.points[i].z = points[i * 3 + 2];
-	}
-	/*
-	for (auto& point: cloud)
-        {
-		point.x = *(points);// +i*3);
-		point.y = *(points);//+i*3+1);
-		point.z = *(points+i*3+2);
-                i++;
-        }
-	*/
-	if(debug)
-		printf("point count %d i %d \n",point_count, i);
-	scanf("%d",&h);
-        return cloud;
+    for (int i = 0; i < point_count; ++i)
+    {
+        cloud.points[i].x = points[i * 3];
+        cloud.points[i].y = points[i * 3 + 1];
+        cloud.points[i].z = points[i * 3 + 2];
+    }
+
+    if(debug)
+        printf("Converted %d points\n", point_count);
+
+    return cloud;
 }
+/*
 extern "C"
 {
         void lokailasiens(double* output,int scan_count, double *scan, int cad_count, double *cad)
@@ -383,9 +372,50 @@ extern "C"
 		//auto scan_pcl_sprt = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>(scan_pcl);
         	//auto cad_pcl_sprt = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>(cad_model_pcl);
 		//auto scan_pcl_sprt = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>(scan_pcl);
-		//auto cad_pcl_sprt = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>(cad_model_pcl);
+		//auto cad_pcl_sprt = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>(cad_model_pcl);
 		
 		printf(" In order to entrain the operation, this is a debug.");
+#ifdef USE_BOOST
+		auto scan_pcl_sprt = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>(scan_pcl);
+		auto cad_pcl_sprt = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>(cad_model_pcl);
+#else
+		auto scan_pcl_sprt = pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>(scan_pcl);
+		auto cad_pcl_sprt = pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>(cad_model_pcl);
+#endif
+
+		printf(" In order to entrain the operation, this is a debug.");
+		VoxelGrid_homogenise(scan_pcl_sprt, 0.005f);
+		VoxelGrid_homogenise(cad_pcl_sprt, 0.005f);
+	        Eigen::Matrix4f transformation = multi_ICP(scan_pcl_sprt, cad_pcl_sprt, 16);
+	        //Eigen::Matrix4f transformation = multi_ICP_multicore(scan_pcl_sprt, cad_pcl_sprt, 16);
+                for (int i = 0; i < 4; i++)
+                {
+                        output[4*i + 0] = transformation(i ,0);
+                        output[4*i + 1] = transformation(i ,1);
+                        output[4*i + 2] = transformation(i ,2);
+                        output[4*i + 3] = transformation(i ,3);
+                }
+        }
+}
+*/
+
+extern "C"
+{
+    void lokailasiens(double* output, int scan_count, double *scan, int cad_count, double *cad)
+    {
+        printf("scan_count: %d, cad_count: %d\n", scan_count, cad_count);
+
+        pcl::PointCloud<pcl::PointXYZ> cad_model_pcl;
+        pcl::PointCloud<pcl::PointXYZ> scan_pcl;
+
+        scan_pcl = c_array_to_pcl_pc(scan_count, scan, true);
+        cad_model_pcl = c_array_to_pcl_pc(cad_count, cad, true);
+
+        // Validate point counts
+        if (scan_pcl.size() != scan_count || cad_model_pcl.size() != cad_count) {
+            fprintf(stderr, "PointCloud size mismatch: scan_pcl.size() = %zu, cad_model_pcl.size() = %zu\n", scan_pcl.size(), cad_model_pcl.size());
+            return;
+        }
 #ifdef USE_BOOST
 		auto scan_pcl_sprt = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>(scan_pcl);
 		auto cad_pcl_sprt = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>(cad_model_pcl);
