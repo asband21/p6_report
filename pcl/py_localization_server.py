@@ -43,10 +43,15 @@ def receive_arrays_and_send_result(port):
             continue
         
         output = np.zeros((4, 4), dtype=np.float64)
-        
+        """ 
+        cad = np.ascontiguousarray(cad)
+        scan = np.ascontiguousarray(scan)
         # Simulate long computation
         print("Starting computation...")
         start_time = time.time()
+        print(scan.shape)
+        print(cad.shape)
+        print(cad[cad.shape[0]-1])
         lokailasiens(
             output.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
             scan.shape[0], scan.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
@@ -54,7 +59,31 @@ def receive_arrays_and_send_result(port):
         )
         end_time = time.time()
         print(f"Computation finished in {end_time - start_time} seconds")
-        
+        """
+        cad = np.ascontiguousarray(cad)
+        scan = np.ascontiguousarray(scan)
+
+        # Check if the arrays are contiguous
+        assert cad.flags['C_CONTIGUOUS'], "cad array is not contiguous"
+        assert scan.flags['C_CONTIGUOUS'], "scan array is not contiguous"
+
+        # Simulate long computation
+        print("Starting computation...")
+        start_time = time.time()
+        print("scan shape:", scan.shape)
+        print("cad shape:", cad.shape)
+        print("Last element of cad:", cad[-1])
+
+        # Assuming output is another NumPy array for results
+        ##output = np.zeros_like(cad)  # or the appropriate shape
+
+        # Call the C++ function via ctypes
+        lokailasiens(
+            output.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+            scan.shape[0], scan.ctypes.data_as(ctypes.POINTER(ctypes.c_double)),
+            cad.shape[0], cad.ctypes.data_as(ctypes.POINTER(ctypes.c_double)))
+
+
         result_array = output
         compressed_result = zlib.compress(pickle.dumps(result_array))  # Compress the result before sending
         conn.sendall(compressed_result)

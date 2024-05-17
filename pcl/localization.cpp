@@ -337,7 +337,7 @@ Eigen::Matrix4f multi_ICP_multicore(const pcl::PointCloud<pcl::PointXYZ>::Ptr& s
 	return complete_transformation;
 }
 
-pcl::PointCloud<pcl::PointXYZ> c_arey_to_pcl_pc(int point_count, double *points)
+pcl::PointCloud<pcl::PointXYZ> c_arey_to_pcl_pc(int point_count, double *points, bool debug = false)
 {
 
 	//auto cloud = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>();
@@ -345,15 +345,28 @@ pcl::PointCloud<pcl::PointXYZ> c_arey_to_pcl_pc(int point_count, double *points)
         cloud.width    = point_count;
         cloud.height   = 1;
         cloud.is_dense = false;
-        cloud.resize (cloud.width * cloud.height);
+        cloud.resize(cloud.width * cloud.height);
         int i = 0;
+	int h;
+	printf("point count %d i %d \n",point_count, i);
+	for (int i = 0; i < point_count; ++i)
+	{
+		cloud.points[i].x = points[i * 3];
+		cloud.points[i].y = points[i * 3 + 1];
+		cloud.points[i].z = points[i * 3 + 2];
+	}
+	/*
 	for (auto& point: cloud)
         {
-		point.x = *(points+i*3);
-		point.y = *(points+i*3+1);
+		point.x = *(points);// +i*3);
+		point.y = *(points);//+i*3+1);
 		point.z = *(points+i*3+2);
                 i++;
         }
+	*/
+	if(debug)
+		printf("point count %d i %d \n",point_count, i);
+	scanf("%d",&h);
         return cloud;
 }
 extern "C"
@@ -362,14 +375,17 @@ extern "C"
         {
 		pcl::PointCloud<pcl::PointXYZ> cad_model_pcl;
 		pcl::PointCloud<pcl::PointXYZ> scan_pcl;
-                scan_pcl = c_arey_to_pcl_pc(scan_count, scan);
-                cad_model_pcl = c_arey_to_pcl_pc(cad_count, cad);
+                scan_pcl = c_arey_to_pcl_pc(scan_count, scan, true);
+                cad_model_pcl = c_arey_to_pcl_pc(cad_count, cad, true);
+		int h;
+		scanf("%d",&h);
 		//skal roter lokalt
 		//auto scan_pcl_sprt = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>(scan_pcl);
         	//auto cad_pcl_sprt = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>(cad_model_pcl);
 		//auto scan_pcl_sprt = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>(scan_pcl);
 		//auto cad_pcl_sprt = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>(cad_model_pcl);
-
+		
+		printf(" In order to entrain the operation, this is a debug.");
 #ifdef USE_BOOST
 		auto scan_pcl_sprt = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>(scan_pcl);
 		auto cad_pcl_sprt = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>(cad_model_pcl);
@@ -378,10 +394,11 @@ extern "C"
 		auto cad_pcl_sprt = pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>(cad_model_pcl);
 #endif
 
+		printf(" In order to entrain the operation, this is a debug.");
 		VoxelGrid_homogenise(scan_pcl_sprt, 0.005f);
 		VoxelGrid_homogenise(cad_pcl_sprt, 0.005f);
-	        //Eigen::Matrix4f transformation = multi_ICP(scan_pcl_sprt, cad_pcl_sprt, 16);
-	        Eigen::Matrix4f transformation = multi_ICP_multicore(scan_pcl_sprt, cad_pcl_sprt, 16);
+	        Eigen::Matrix4f transformation = multi_ICP(scan_pcl_sprt, cad_pcl_sprt, 16);
+	        //Eigen::Matrix4f transformation = multi_ICP_multicore(scan_pcl_sprt, cad_pcl_sprt, 16);
                 for (int i = 0; i < 4; i++)
                 {
                         output[4*i + 0] = transformation(i ,0);
