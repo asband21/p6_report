@@ -57,7 +57,8 @@ def receive_arrays_and_send_result(port):
         start_time = time.time()
         print("scan shape:", scan.shape)
         print("cad shape:", cad.shape)
-        print("Last element of cad:", cad[-1])
+        
+        #print("Last element of cad:", cad[-1])
 
         # Call the C++ function via ctypes
         lokailasiens(
