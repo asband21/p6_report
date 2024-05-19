@@ -202,14 +202,14 @@ struct icp_return performICP(const pcl::PointCloud<pcl::PointXYZ>::Ptr &source, 
 	
 	// Set the max correspondence distance to 5cm (e.g., correspondences with higher
 	// distances will be ignored)
-	icp.setMaxCorrespondenceDistance (17000.5);
+	//icp.setMaxCorrespondenceDistance (17000.5);
 	// Set the maximum number of iterations (criterion 1)
 	icp.setMaximumIterations (5000);
 	// Set the transformation epsilon (criterion 2)
 	//icp.setTransformationEpsilon (1e-8);
 	// Set the euclidean distance difference epsilon (criterion 3)
-	//icp.setEuclideanFitnessEpsilon (0.01);
-	icp.setEuclideanFitnessEpsilon (1000.01);
+	icp.setEuclideanFitnessEpsilon (0.01);
+	//icp.setEuclideanFitnessEpsilon (1000.01);
 	/*
 	*/
 	
@@ -358,47 +358,6 @@ pcl::PointCloud<pcl::PointXYZ> c_array_to_pcl_pc(int point_count, double *points
 
     return cloud;
 }
-/*
-extern "C"
-{
-        void lokailasiens(double* output,int scan_count, double *scan, int cad_count, double *cad)
-        {
-		pcl::PointCloud<pcl::PointXYZ> cad_model_pcl;
-		pcl::PointCloud<pcl::PointXYZ> scan_pcl;
-                scan_pcl = c_arey_to_pcl_pc(scan_count, scan, true);
-                cad_model_pcl = c_arey_to_pcl_pc(cad_count, cad, true);
-		int h;
-		scanf("%d",&h);
-		//skal roter lokalt
-		//auto scan_pcl_sprt = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>(scan_pcl);
-        	//auto cad_pcl_sprt = std::make_shared<pcl::PointCloud<pcl::PointXYZ>>(cad_model_pcl);
-		//auto scan_pcl_sprt = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>(scan_pcl);
-		//auto cad_pcl_sprt = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>(cad_model_pcl);
-		
-		printf(" In order to entrain the operation, this is a debug.");
-#ifdef USE_BOOST
-		auto scan_pcl_sprt = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>(scan_pcl);
-		auto cad_pcl_sprt = boost::make_shared<pcl::PointCloud<pcl::PointXYZ>>(cad_model_pcl);
-#else
-		auto scan_pcl_sprt = pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>(scan_pcl);
-		auto cad_pcl_sprt = pcl::make_shared<pcl::PointCloud<pcl::PointXYZ>>(cad_model_pcl);
-#endif
-
-		printf(" In order to entrain the operation, this is a debug.");
-		VoxelGrid_homogenise(scan_pcl_sprt, 0.005f);
-		VoxelGrid_homogenise(cad_pcl_sprt, 0.005f);
-	        Eigen::Matrix4f transformation = multi_ICP(scan_pcl_sprt, cad_pcl_sprt, 16);
-	        //Eigen::Matrix4f transformation = multi_ICP_multicore(scan_pcl_sprt, cad_pcl_sprt, 16);
-                for (int i = 0; i < 4; i++)
-                {
-                        output[4*i + 0] = transformation(i ,0);
-                        output[4*i + 1] = transformation(i ,1);
-                        output[4*i + 2] = transformation(i ,2);
-                        output[4*i + 3] = transformation(i ,3);
-                }
-        }
-}
-*/
 
 extern "C"
 {
@@ -428,20 +387,40 @@ extern "C"
 		printf(" In order to entrain the operation, this is a debug.");
 		VoxelGrid_homogenise(scan_pcl_sprt, 0.005f);
 		VoxelGrid_homogenise(cad_pcl_sprt, 0.005f);
-	        //Eigen::Matrix4f transformation = multi_ICP(scan_pcl_sprt, cad_pcl_sprt, 16);
-	        Eigen::Matrix4f transformation = multi_ICP_multicore(scan_pcl_sprt, cad_pcl_sprt, 20);
-                for (int i = 0; i < 4; i++)
-                {
-                        output[4*i + 0] = transformation(i ,0);
-                        output[4*i + 1] = transformation(i ,1);
-                        output[4*i + 2] = transformation(i ,2);
-                        output[4*i + 3] = transformation(i ,3);
-                }
-        }
+		//Eigen::Matrix4f transformation = multi_ICP(scan_pcl_sprt, cad_pcl_sprt, 16);
+		Eigen::Matrix4f transformation = multi_ICP_multicore(scan_pcl_sprt, cad_pcl_sprt, 20);
+		for (int i = 0; i < 4; i++)
+		{
+			output[4*i + 0] = transformation(i ,0);
+			output[4*i + 1] = transformation(i ,1);
+			output[4*i + 2] = transformation(i ,2);
+			output[4*i + 3] = transformation(i ,3);
+		}
+	}
 }
 
-int main()
+void print_transformation_matrix(Eigen::Matrix4f transformation)
 {
+	for(int i = 0; i < 4; i++ )
+	{
+		for(int j = 0; j < 4; j++)
+			printf("%f\t", transformation(i,j));
+		printf("\n");
+	}
+}
+
+int main(int argc, char** argv)
+{
+	char *sti_ref = "./gig_AAUTest97_ransed_lille.csv";
+	//char *sti_scan = "./data/data_1/scan.csv";
+	//char *sti_scan = "./data/implementation_UDEN_INVERS/all_transformed_vertices.csv";
+	char *sti_scan = "./data/implementation_OPPE/all_transformed_vertices.csv";
+	//char *sti_scan = "./data/implementation_OPPE/scan.csv";
+	if(argc > 1)
+		sti_scan = argv[2];
+	if(argc > 2)
+		sti_ref = argv[3];
+
 	pcl::PointCloud<pcl::PointXYZ>::Ptr cad_model(new pcl::PointCloud<pcl::PointXYZ>);
 	pcl::PointCloud<pcl::PointXYZ>::Ptr scan(new pcl::PointCloud<pcl::PointXYZ>);
 	pcl::PointCloud<pcl::PointXYZ>::Ptr scan_2(new pcl::PointCloud<pcl::PointXYZ>);
@@ -449,8 +428,6 @@ int main()
 	pcl::PointCloud<pcl::PointXYZ>::Ptr rota(new pcl::PointCloud<pcl::PointXYZ>);
 	*rota = point_on_sphere(900);
 
-	char sti_ref[] = "./reference_pointcloud.csv";
-	char sti_scan[] = "./scan_RT_pointcloud_w_duplicates.csv";
 	*cad_model = load_from_csv(sti_ref);
 	*scan = load_from_csv(sti_scan);
 	printf("\n-----------\n");
@@ -460,20 +437,22 @@ int main()
 	VoxelGrid_homogenise(cad_model, 0.005f);
 
 	//Eigen::Matrix4f transformation = performICP(scan, cad_model);
-	Eigen::Matrix4f transformation = multi_ICP(scan, cad_model, 16);
+	//Eigen::Matrix4f transformation = multi_ICP(scan, cad_model, 16);
+	Eigen::Matrix4f transformation = multi_ICP_multicore(scan, cad_model, 24);
 	
-	pcl::transformPointCloud (*scan, *scan_2, transformation);
+	pcl::transformPointCloud(*scan, *scan_2, transformation);
+	print_transformation_matrix(transformation);
 
 	// Optionally visualise the result
 	pcl::visualization::PCLVisualizer viewer("ICP demo");
-	pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> source_color(scan, 255, 0, 0);
+	//pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> source_color(scan, 255, 0, 0);
 	pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> source_2_color(scan_2, 0, 0, 255);
-	pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> rota_color(rota, 200, 200, 20);
+	//pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> rota_color(rota, 200, 200, 20);
 	pcl::visualization::PointCloudColorHandlerCustom<pcl::PointXYZ> target_color(cad_model, 0, 255, 0);
-	viewer.addPointCloud(scan, source_color, "source");
+	//viewer.addPointCloud(scan, source_color, "source");
 	viewer.addPointCloud(scan_2, source_2_color, "source_2");
 	viewer.addPointCloud(cad_model, target_color, "target");
-	viewer.addPointCloud(rota, rota_color, "rota");
+	//viewer.addPointCloud(rota, rota_color, "rota");
 
 	while (!viewer.wasStopped())
 	{
