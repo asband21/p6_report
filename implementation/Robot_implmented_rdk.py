@@ -30,7 +30,7 @@ from robodk import *    # Import the RoboDK API constants
 from robodk.robomath import * 
 from decodeing import Parser 
 from functioncal_point_cloud_2 import weld_item_to_globel_transformaisen 
-from PathSnapping import path_snipping
+#from PathSnapping import path_snipping
 import re  
 import math 
 import keyboard 
@@ -290,12 +290,10 @@ def Main() :
         
         
         # The weld path is selected by the user, the user selects the weld seam by recording the TCP postion in the format of (x,y,z, roll,pitch,yaw) 
-        while True:  
-            path_snipping_list=path_snipping(weld_path_selction(robot) ) # the path is snipped to the correct format 
-            
-            
-
+        #while True:  
+        #    path_snipping_list=path_snipping(weld_path_selction(robot) ) # the path is snipped to the correct format 
         
+
         #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!# 
         # Then Mads code is used on the location data and the coordiantes are used to select a path for the robot to weld
         #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!# 
