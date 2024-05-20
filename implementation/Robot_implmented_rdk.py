@@ -29,16 +29,18 @@ from robolink import *  # Import the RoboDK API
 from robodk import *    # Import the RoboDK API constants  
 from robodk.robomath import * 
 from decodeing import Parser 
-from functioncal_point_cloud_2 import weld_item_to_globel_transformaisen
+from functioncal_point_cloud_2 import weld_item_to_globel_transformaisen 
+#from PathSnapping import path_snipping
 import re  
 import math 
 import keyboard 
-import numpy as np
+import numpy as np 
+
 UR_Data=Parser()
 # Start RoboDK 
 RDK = Robolink()  
-RDK.Command("UseGPU",1) # set the GPU to true, so the simulation uses the GPU for rendering
-RDK.Command("AutoRender", 1) # set the auto render to false, so the simulation does not render automatically
+#RDK.Command("UseGPU",1) # set the GPU to true, so the simulation uses the GPU for rendering
+#RDK.Command("AutoRender", 1) # set the auto render to false, so the simulation does not render automatically
 
 
 
@@ -48,7 +50,7 @@ collisions_bool = True  # set to True to enable collision detection, !!! not nes
 def SetUp(): 
 
     # setup the station
-    station_path = "roboDK_simulation_mod.rdk"
+    station_path = "./roboDK_simulation_mod.rdk"
     station = RDK.AddFile(station_path)  # Load a station
     robot = RDK.Item('', ITEM_TYPE_ROBOT) # if the robot is not provided, the first available robot is used  
     path_settings = RDK.Item('Placement(Update)', ITEM_TYPE_MACHINING) # get the path settings from the simulation
@@ -214,8 +216,8 @@ def Scaning_Mode(robot,camera):
 
 def weld_path_selction(robot): 
     """ The user selects the weld seam  with the robot, by recording  the TCP postion in the format of (x,y,z, roll,pitch,yaw)"""  
-    robot_Mimice_mode(robot) # update the robot joints to the real robot joints   
-    return Pose_2_TxyzRxyz(robot.Pose()) # return the pose of the robot
+    robot_Mimice_mode(robot) # update the robot joints to the real robot joints    
+    return [[Pose_2_TxyzRxyz(robot.Pose())[0]],[Pose_2_TxyzRxyz(robot.Pose())[1]],[Pose_2_TxyzRxyz(robot.Pose())[2]],[Pose_2_TxyzRxyz(robot.Pose())[3]]]  # return the pose of the robot
     
 
 def matrix_to_quaternion(matrix):
@@ -269,7 +271,9 @@ def Main() :
         # Mimic the movement of the robots moment for the pointcloud  
         robot_Mimice_mode(robot) # update the robot joints to the real robot joints   
        
-       # The camera pose is returned from the scaning mode 
+       
+        
+        # The camera pose is returned from the scaning mode 
 
         def replacement_camere_function():
             return (Mat.toNumpy(Scaning_Mode(robot,camera)))
@@ -281,12 +285,15 @@ def Main() :
             print("The weld object was not found")   
             
         else: 
-            qw,qx,qy,qz=matrix_to_quaternion(procced_weld_obj_pose)  
+            qw,qx,qy,qz=matrix_to_quaternion(procced_weld_obj_pose) 
             target.setPose(quaternion_2_pose(qw,qx,qy,qz)) # set the target to new coordinates given from the camera    
         
-
-        TCP_postion=weld_path_selction(robot)
         
+        # The weld path is selected by the user, the user selects the weld seam by recording the TCP postion in the format of (x,y,z, roll,pitch,yaw) 
+        #while True:  
+        #    path_snipping_list=path_snipping(weld_path_selction(robot) ) # the path is snipped to the correct format 
+        
+
         #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!# 
         # Then Mads code is used on the location data and the coordiantes are used to select a path for the robot to weld
         #!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!# 
@@ -300,10 +307,7 @@ def Main() :
         port = 30001
         robot.setConnectionParams(ip, port,"/programs/","root","easybot") # set the connection parameters of the robot
         robot.Connect() # Connect to the robot     
-
-    
-    
-          
+      
        
         # Going into drag mode   
         
