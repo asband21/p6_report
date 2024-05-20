@@ -281,7 +281,7 @@ def Main() :
             print("The weld object was not found")   
             
         else: 
-            qw,qx,qy,qz=matrix_to_quaternion(procced_weld_obj_pose)  
+            qw,qx,qy,qz=matrix_to_quaternion(procced_weld_obj_pose) 
             target.setPose(quaternion_2_pose(qw,qx,qy,qz)) # set the target to new coordinates given from the camera    
         
 
@@ -300,10 +300,7 @@ def Main() :
         port = 30001
         robot.setConnectionParams(ip, port,"/programs/","root","easybot") # set the connection parameters of the robot
         robot.Connect() # Connect to the robot     
-
-    
-    
-          
+      
        
         # Going into drag mode   
         

@@ -130,6 +130,7 @@ def weld_item_to_globel_transformaisen(cam_fun = None):
 
         #print(all_transformed_vertices)
         #print(all_transformed_vertices.shape)
+<<<<<<< HEAD
         #boks_min = np.array([-1000, -1000.0, -10000])
         #boks_max = np.array([1000000.1, 10000.1, 100000.1])
         boks_min = np.array([-18.8, -27.02684, 15.883871])
@@ -139,14 +140,26 @@ def weld_item_to_globel_transformaisen(cam_fun = None):
         np.savetxt("data/scan.csv", scan, delimiter=",")
         np.savetxt("data/all_transformed_vertices.csv", all_transformed_vertices, delimiter=",")
 
+=======
+        
+        boks_max = np.array([1984.022576, 1004.554607, 1500])
+        boks_min = np.array([0, 0, 20])
+        scan = filter_points_inside_box(boks_min, boks_max, all_transformed_vertices*1000)
+        debug = True
+        if debug:
+            np.savetxt("scan.csv", scan, delimiter=",")
+            np.savetxt("all_transformed_vertices.csv", all_transformed_vertices, delimiter=",")
+            np.savetxt("cad.csv", cad, delimiter=",")
+>>>>>>> 2e6fbc896bbb0b8e4cff65febbe7a4725cf4cb0f
         #print("scan")
         print(scan.shape)
         #print("cad")
         print(cad.shape)
         #pipeline.stop()
         
-        receiver_ip = '100.95.44.35'  # Replace with the actual IP address
+        receiver_ip = '100.95.44.35'  # Replace with the actual IP address  
         port = 65432  # Replace with the actual port
+
         result = send_arrays_and_receive_result(cad, scan, receiver_ip, port)
         """
         if result is not None:
@@ -159,4 +172,4 @@ def weld_item_to_globel_transformaisen(cam_fun = None):
         pipeline.stop()
 
 if __name__ == "__main__":
-    trans = scan_mod()
+    trans = weld_item_to_globel_transformaisen()
