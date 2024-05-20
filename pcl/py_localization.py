@@ -18,7 +18,6 @@ def send_arrays_and_receive_result(array1, array2, receiver_ip, port):
     if array2.shape[0] < 0 or array2.shape[0] > 100000000:
         print("array2 have the wrong number of rows.")
         exit()
-
     data = pickle.dumps((array1, array2))
     compressed_data = zlib.compress(data)  # Compress the data before sending
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -26,7 +25,6 @@ def send_arrays_and_receive_result(array1, array2, receiver_ip, port):
     s.connect((receiver_ip, port))
     s.sendall(compressed_data)
     s.shutdown(socket.SHUT_WR)  # Indicate that we're done sending
-
     result = b""
     while True:
         try:
@@ -40,16 +38,13 @@ def send_arrays_and_receive_result(array1, array2, receiver_ip, port):
         except Exception as e:
             print(f"Error receiving data: {e}")
             break
-    
     try:
         decompressed_result = zlib.decompress(result)  # Decompress the received data
         result_array = pickle.loads(decompressed_result)
     except Exception as e:
         print(f"Failed to deserialize result: {e}")
         result_array = None
-
     s.close()
-    
     return result_array
 
 def generate_random_array(n):

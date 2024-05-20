@@ -39,8 +39,8 @@ import numpy as np
 UR_Data=Parser()
 # Start RoboDK 
 RDK = Robolink()  
-RDK.Command("UseGPU",1) # set the GPU to true, so the simulation uses the GPU for rendering
-RDK.Command("AutoRender", 1) # set the auto render to false, so the simulation does not render automatically
+#RDK.Command("UseGPU",1) # set the GPU to true, so the simulation uses the GPU for rendering
+#RDK.Command("AutoRender", 1) # set the auto render to false, so the simulation does not render automatically
 
 
 
@@ -50,7 +50,7 @@ collisions_bool = True  # set to True to enable collision detection, !!! not nes
 def SetUp(): 
 
     # setup the station
-    station_path = "roboDK_simulation_mod.rdk"
+    station_path = "./roboDK_simulation_mod.rdk"
     station = RDK.AddFile(station_path)  # Load a station
     robot = RDK.Item('', ITEM_TYPE_ROBOT) # if the robot is not provided, the first available robot is used  
     path_settings = RDK.Item('Placement(Update)', ITEM_TYPE_MACHINING) # get the path settings from the simulation
