@@ -171,7 +171,7 @@ def Collision_mapping(robot_target,weld_targe_external, weld_target_exit) :
            
            # Will loop until a path is found 
             i = 0
-            while(status_TO_Weld == "Sucsess" or status_TO_Home == "Sucsess"): 
+            while(status_TO_Weld == "Sucsess" and status_TO_Home == "Sucsess"): 
                 print("Path genreation was a %s Trying again"%status) 
                 RDK.PluginCommand("CollisionFreePlanner", "Calc") 
                 RDK.PluginCommand("CollisionFreePlanner", "Display", 1)  
@@ -179,7 +179,7 @@ def Collision_mapping(robot_target,weld_targe_external, weld_target_exit) :
                 status_TO_Weld = RDK.PluginCommand("CollisionFreePlanner", f"Join={TO_weld_name}",f"{robot_target.Name()}|{ weld_targe_external.Name()}") # join the targets ¨
                 status_TO_Home =RDK.PluginCommand("CollisionFreePlanner", f"Join={TO_home_name}",f"{weld_target_exit.Name()}|{ robot_target.Name() }")
                 if i == 2: 
-                     break
+                    break
             # after the paht is found, the robot is place on the target, but is moved back to its start postion
             
             print("Path genreation was a %s"%status) 
