@@ -10,8 +10,8 @@ pipeline = rs.pipeline()
 config = rs.config()
 
 # This is the minimal recommended configuration for D435 Depth Camera
-config.enable_stream(rs.stream.depth, 1280, 720, rs.format.z16, 30)
-config.enable_stream(rs.stream.color, 1280, 720, rs.format.bgr8, 30)
+config.enable_stream(rs.stream.depth,640 ,480, rs.format.z16, 30)
+config.enable_stream(rs.stream.color,640, 480, rs.format.bgr8, 30)
 
 # Start streaming
 profile = pipeline.start(config)
@@ -33,7 +33,7 @@ print(" depth scale : %s" %depth_scale)
 try:
     while True:
         # Get frameset of color and depth 
-        frames = pipeline.wait_for_frames()  
+        frames = pipeline.wait_for_frames(5000)  
         
         # Align the depth frame to color frame
         aligned_frames =align.process(frames) 

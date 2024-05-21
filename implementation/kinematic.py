@@ -32,7 +32,7 @@ def Forward_Kinematics(theta):
     d=np.array(Denavit_Hartenberg()["d"]) 
     alpha=np.array(Denavit_Hartenberg()["alpha"])  
     #Forward = np.matmul(np.matmul(np.matmul(np.matmul(np.matmul(transformation(theta[0], r[0], d[0], alpha[0]), transformation(theta[1], r[1], d[1], alpha[1])), transformation(theta[2], r[2], d[2], alpha[2])), transformation(theta[3], r[3], d[3], alpha[3])), transformation(theta[4], r[4], d[4], alpha[4])), transformation(theta[5], r[5], d[5], alpha[5])) 
-    if False:   
+    if True:   
         # Define transformation matrix Classic Davit-Hartenberg
         trans0 = [[np.cos(theta[0]), -np.sin(theta[0]) * np.cos(np.pi/2), np.sin(theta[0]) * np.sin(np.pi/2), 0 * np.cos(theta[0])], [np.sin(theta[0]), np.cos(theta[0]) * np.cos(np.pi/2), -np.cos(theta[0]) * np.sin(np.pi/2), 0 * np.sin(np.pi/2)], [0, np.sin(np.pi/2), np.cos(np.pi/2), 0.1807], [0, 0, 0, 1]]    
         trans1 = [[np.cos(theta[1]), -np.sin(theta[1]) * np.cos(0), np.sin(theta[1]) * np.sin(0), -0.6127 * np.cos(theta[1])], [np.sin(theta[1]), np.cos(theta[1]) * np.cos(0), -np.cos(theta[1]) * np.sin(0), -0.6127 * np.sin(0)], [0, np.sin(0), np.cos(0), 0], [0, 0, 0, 1]]
@@ -49,7 +49,7 @@ def Forward_Kinematics(theta):
         trans4 = [[np.cos(theta[4]),-np.sin(theta[4]),0,r[4-1]], [np.sin(theta[4])*np.cos(alpha[4-1]),np.cos(theta[4])*np.cos(alpha[4-1]),-np.sin(alpha[4-1]),-d[4]*np.sin(alpha[4-1])], [np.sin(theta[4])*np.sin(alpha[4-1]),np.cos(theta[4])*np.sin(alpha[4-1]),np.cos(alpha[4-1]),d[4]*np.cos(alpha[4-1])], [0,0,0,1]]
         trans5 = [[np.cos(theta[5]),-np.sin(theta[5]),0,r[5-1]], [np.sin(theta[5])*np.cos(alpha[5-1]),np.cos(theta[5])*np.cos(alpha[5-1]),-np.sin(alpha[5-1]),-d[5]*np.sin(alpha[5-1])], [np.sin(theta[5])*np.sin(alpha[5-1]),np.cos(theta[5])*np.sin(alpha[5-1]),np.cos(alpha[5-1]),d[5]*np.cos(alpha[5-1])], [0,0,0,1]]
 
-    if False : 
+    if True : 
 
         trans_0_1 = np.matmul(trans0,trans1) 
         trans_1_2 = np.matmul(trans_0_1,trans2) 
@@ -99,6 +99,7 @@ if __name__ == '__main__':
     else:  
         from decodeing import all_data
         #print(all_data)   
-        print(all_data['JointData'])
+        print(all_data['JointData']['q_actual0'],all_data['JointData']['q_actual1'],all_data['JointData']['q_actual2'],all_data['JointData']['q_actual3'],all_data['JointData']['q_actual4'],all_data['JointData']['q_actual5']) 
+        print(all_data['CartesianInfo'])
         # 'CartesianInfo': {'size': 101, 'type': 4, 'X': 0.19835764207055803, 'Y': -0.7328149914118703, 'Z': 0.6418294776661115, 'Rx': 2.125892514876749, 'Ry': -2.3027099828526767, 'Rz': 0.0032229985251860838
         # 'q_actual0': -0.9637444655047815,'q_actual1': -1.464888111954071,  'q_actual2': -1.7108891010284424, 'q_actual3': -1.53567290425811, 'q_actual4': 1.5709656476974487,'q_actual5': -0.9636171499835413
