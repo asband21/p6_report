@@ -170,7 +170,7 @@ def Collision_mapping(robot_target,weld_targe_external, weld_target_exit) :
             
            
            # Will loop until a path is found 
-            i = 0
+           
             while(status_TO_Weld == "Sucsess" and status_TO_Home == "Sucsess"): 
                 print("Path genreation was a %s Trying again"%status) 
                 RDK.PluginCommand("CollisionFreePlanner", "Calc") 
@@ -178,8 +178,7 @@ def Collision_mapping(robot_target,weld_targe_external, weld_target_exit) :
                 
                 status_TO_Weld = RDK.PluginCommand("CollisionFreePlanner", f"Join={TO_weld_name}",f"{robot_target.Name()}|{ weld_targe_external.Name()}") # join the targets ¨
                 status_TO_Home =RDK.PluginCommand("CollisionFreePlanner", f"Join={TO_home_name}",f"{weld_target_exit.Name()}|{ robot_target.Name() }")
-                if i == 2: 
-                    break
+               
             # after the paht is found, the robot is place on the target, but is moved back to its start postion
             
             print("Path genreation was a %s"%status) 
@@ -264,7 +263,7 @@ def Main() :
         tcp_coords_to_weld = {}
         j =0
                 #print(program.InstructionCount()) 
-        #input("de er klar til at køre programmet")
+        input("de er klar til at køre programmet")
         while True: 
             distance = [[],[],[]]
             for i in range(program.InstructionCount()):    
@@ -323,9 +322,6 @@ def Main() :
                         modified_path_program.MoveL(program.Instruction(i)[4])  
             previous_i = i
         
-        
-        
-       
         instruction_entrance_joints = modified_path_program.Instruction(4)[5]
         instruction_exit = modified_path_program.Instruction(max_count_of_instructions)[5]
         
