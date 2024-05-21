@@ -82,7 +82,7 @@ def weld_item_to_globel_transformaisen(cam_fun = None):
 
     pipeline.start(config)
 
-    filename_cad = './gig_AAUTest97_ransed.csv'
+    filename_cad = './gig_AAUTest97_ransed_lille.csv'
     cad = load_csv_to_numpy(filename_cad)
 
     num_iterations = 5
@@ -92,7 +92,8 @@ def weld_item_to_globel_transformaisen(cam_fun = None):
     else:
         all_transformed_vertices = np.empty((0, 3))
     print("flyt dig")
-    time.sleep(10)
+    time.sleep(3)
+    print('\a')
     print("strater nu")
     try:
         for i in range(num_iterations):
@@ -105,12 +106,13 @@ def weld_item_to_globel_transformaisen(cam_fun = None):
             vertices = np.asarray(points.get_vertices())
             
             vertices = np.asarray(points.get_vertices()).view(np.float32).reshape(-1, 3)
+            vertices = vertices @ np.array([[-1,0,0],[0,1,0],[0,0,1]]) # flipper x
             #vertices = np.stack((vertices['f0'], vertices['f1'], vertices['f2']), axis=-1)
             homogeneous_vertices = np.hstack((vertices, np.ones((vertices.shape[0], 1))))
             #transformed_homogeneous_vectors = homogeneous_vertices @ (np.linalg.inv(cam_fun())).T
-            mid_trans = cam_fun()
+            mid_trans = np.linalg.inv(cam_fun()).T
             print(mid_trans)
-            transformed_homogeneous_vectors = homogeneous_vertices*1000 @ mid_trans
+            transformed_homogeneous_vectors = homogeneous_vertices @ mid_trans
             transformed_vertices = transformed_homogeneous_vectors[:, :3]
             if per_alo:
                 start_index = i * num_points_per_frame
@@ -124,19 +126,21 @@ def weld_item_to_globel_transformaisen(cam_fun = None):
             print(transformed_vertices.shape)
 
             print("kør")
-            time.sleep(5)
+            time.sleep(4)
             print("holdt")
-            time.sleep(1)
+            print('\a')
+            time.sleep(0.5)
 
         #print(all_transformed_vertices)
         #print(all_transformed_vertices.shape)
-        #boks_min = np.array([-1000, -1000.0, -10000])
-        #boks_max = np.array([1000000.1, 10000.1, 100000.1])
-        boks_min = np.array([-18.8, -27.02684, 15.883871])
-        boks_max = np.array([1984.1, 1004.1, 1000.1])
+        #boks_min = np.array([0.0, -2, 0])
+        #boks_max = np.array([2, 1, 1])
+        boks_min = np.array([0.8, -2, 0.02])
+        boks_max = np.array([1.4, 1, 0.15])
         scan = filter_points_inside_box(boks_min, boks_max, all_transformed_vertices)
         
         np.savetxt("data/scan.csv", scan, delimiter=",")
+        np.savetxt("data/cad.csv", cad, delimiter=",")
         np.savetxt("data/all_transformed_vertices.csv", all_transformed_vertices, delimiter=",")
 
         #print("scan")
@@ -149,6 +153,16 @@ def weld_item_to_globel_transformaisen(cam_fun = None):
         port = 65432  # Replace with the actual port
 
         result = send_arrays_and_receive_result(cad, scan, receiver_ip, port)
+        mid_res = np.linalg.inv(result).T
+        cad = np.hstack((cad, np.ones((cad.shape[0], 1))))
+        cad = cad @ mid_res
+        cad = cad[:, :3]
+
+        np.savetxt("data/cad_nypos.csv", cad, delimiter=",")
+        print('\a')
+        time.sleep(0.1)
+        print('\a')
+
         """
         if result is not None:
             print(result)

@@ -208,7 +208,7 @@ struct icp_return performICP(const pcl::PointCloud<pcl::PointXYZ>::Ptr &source, 
 	// Set the transformation epsilon (criterion 2)
 	//icp.setTransformationEpsilon (1e-8);
 	// Set the euclidean distance difference epsilon (criterion 3)
-	icp.setEuclideanFitnessEpsilon (0.01);
+	icp.setEuclideanFitnessEpsilon (0.0002);
 	//icp.setEuclideanFitnessEpsilon (1000.01);
 	/*
 	*/
@@ -388,7 +388,7 @@ extern "C"
 		VoxelGrid_homogenise(scan_pcl_sprt, 0.005f);
 		VoxelGrid_homogenise(cad_pcl_sprt, 0.005f);
 		//Eigen::Matrix4f transformation = multi_ICP(scan_pcl_sprt, cad_pcl_sprt, 16);
-		Eigen::Matrix4f transformation = multi_ICP_multicore(scan_pcl_sprt, cad_pcl_sprt, 20);
+		Eigen::Matrix4f transformation = multi_ICP_multicore(scan_pcl_sprt, cad_pcl_sprt, 50);
 		for (int i = 0; i < 4; i++)
 		{
 			output[4*i + 0] = transformation(i ,0);

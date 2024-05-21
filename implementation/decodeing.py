@@ -8,8 +8,8 @@ class Parser(object):
         self.version = (0, 0)   
         self._dataqueue = bytes() 
         self.host = "192.168.0.2" 
-        secondary_port = 30001 #Secondary client interface on Universal Robots
-        self._s_secondary = socket.create_connection((self.host, secondary_port), timeout=0.5)  # the timeout gives a chance to stop the thread
+        self.secondary_port = 30001 #Secondary client interface on Universal Robots
+        self._s_secondary = socket.create_connection((self.host, self.secondary_port), timeout=0.5)  # the timeout gives a chance to stop the thread
     
     def parse(self, data):
             """
@@ -212,12 +212,39 @@ class Parser(object):
                 # self.logger.debug("Could not find packet in received data")
                 tmp = self._s_secondary.recv(1024)
                 self._dataqueue += tmp 
+    def clear_cache(self):
+        self.drain_socket()
+        #self._dataqueue = bytes()
+        #self._s_secondary.close()
+        #self._s_secondary = socket.create_connection((self.host, self.secondary_port), timeout=0.5)  # the timeout gives a chance to stop the thread
 
+    def drain_socket(self):
+        """
+        Read and discard all data currently available on the socket.
+        """
+        try:
+            self._s_secondary.settimeout(0.1)  # Set a small timeout to quickly drain the socket
+            while True:
+                data = self._s_secondary.recv(1024)
+                if not data:
+                    break
+        except socket.timeout:
+            pass
+        finally:
+            self._s_secondary.settimeout(None)  # Restore the default timeout
+
+        """
+    def clear_chas(self):
+        #print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+        #print(self.parse(self._get_packge()))
+        self._dataqueue = bytes()
+        #print(self.parse(self._get_packge()))
+        #print("+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++")
+        """
 program=Parser()    
 all_data=program.parse(program._get_packge())   
 
     
-""" 
 if __name__ == '__main__' :  
     while  True: 
         all_data=program.parse(program._get_packge())   
@@ -234,4 +261,5 @@ if __name__ == '__main__' :
             #print(robot_coordinates)
             #print("Angles =  %s %s %s %s %s %s " % (math.degrees(joints['q_actual0']),math.degrees(joints['q_actual1']),math.degrees(joints['q_actual2']),math.degrees(joints['q_actual3']),math.degrees(joints['q_actual4']),math.degrees(joints['q_actual5']))) 
 
+""" 
 """

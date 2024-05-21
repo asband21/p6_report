@@ -40,7 +40,7 @@ UR_Data=Parser()
 # Start RoboDK 
 RDK = Robolink()  
 #RDK.Command("UseGPU",1) # set the GPU to true, so the simulation uses the GPU for rendering
-#RDK.Command("AutoRender", 1) # set the auto render to false, so the simulation does not render automatically
+RDK.Command("AutoRender", 1) # set the auto render to false, so the simulation does not render automatically
 
 
 
@@ -199,19 +199,37 @@ def Collision_mapping(robot_target,weld_targe_external) :
             print("Collision_mapping was a %s"%status) 
             return TO_home_name,TO_weld_name
 
-
+"""
 def robot_Mimice_mode(robot) : 
     
     all_data=UR_Data.parse(UR_Data._get_packge())  
     robot.setJoints([math.degrees(all_data['JointData']['q_actual0']),math.degrees(all_data['JointData']['q_actual1']),math.degrees(all_data['JointData']['q_actual2']),math.degrees(all_data['JointData']['q_actual3']),math.degrees(all_data['JointData']['q_actual4']),math.degrees(all_data['JointData']['q_actual5'])]) # set the joints of the robot to the joints of the program
-    
+"""
+def robot_Mimice_mode(robot):
+    # Fetch fresh data
+    UR_Data.clear_cache()
+    all_data = UR_Data.parse(UR_Data._get_packge())
+    while 'JointData' not in all_data:
+        all_data = UR_Data.parse(UR_Data._get_packge())
+
+    #Convert joint data from radians to degrees
+    joints_in_degrees = [
+        math.degrees(all_data['JointData']['q_actual0']),
+        math.degrees(all_data['JointData']['q_actual1']),
+        math.degrees(all_data['JointData']['q_actual2']),
+        math.degrees(all_data['JointData']['q_actual3']),
+        math.degrees(all_data['JointData']['q_actual4']),
+        math.degrees(all_data['JointData']['q_actual5'])
+    ]
+    print(joints_in_degrees)
+    robot.setJoints(joints_in_degrees)
 
 def Scaning_Mode(robot,camera):  
     """  
     Fetches the data from the Decoding.py script and sets the simulations robot's joints to that of the real robot. With the robot correnctly placed the RDK.camera.Pose() is returned
     """ 
     robot_Mimice_mode(robot) # update the robot joints to the real robot joints
-    return camera.Pose()
+    return camera.PoseAbs()
     
 
 def weld_path_selction(robot): 
@@ -223,10 +241,8 @@ def weld_path_selction(robot):
 def matrix_to_quaternion(matrix):
     # Ensure the matrix is a numpy array
     matrix = np.array(matrix)
-    
     # Extract the 3x3 rotation matrix
     R = matrix[:3, :3]
-    
     # Compute the trace of the matrix
     trace = np.trace(R)
     
@@ -278,10 +294,16 @@ def Main() :
         # The camera pose is returned from the scaning mode 
 
         def replacement_camere_function():
-            return (Mat.toNumpy(Scaning_Mode(robot,camera)))
-        
+            robot_Mimice_mode(robot)
+            cam = Scaning_Mode(robot,camera)
+            pos = Mat.toNumpy(cam)
+            pos[0, 3] = pos[0, 3]/1000
+            pos[1, 3] = pos[1, 3]/1000
+            pos[2, 3] = pos[2, 3]/1000
+            return pos
 
         procced_weld_obj_pose=weld_item_to_globel_transformaisen(replacement_camere_function)  
+        time.sleep(300)
         print(f"The weld object was found at the following pose: {procced_weld_obj_pose}")
         if procced_weld_obj_pose is None: 
             print("The weld object was not found")   
