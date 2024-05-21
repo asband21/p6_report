@@ -1,87 +1,63 @@
 import pyrealsense2 as rs
 import numpy as np
 
-# Function to get the real-world coordinates xy of a point in the image
-
-# Configure depth and color streams
+# Initialize RealSense pipeline
 pipeline = rs.pipeline()
-config = rs.config()
-config.enable_stream(rs.stream.depth, rs.format.z16, 30) 
-color_stream , color_format = rs.stream.color, rs.format.rgb8
-config.enable_stream(color_stream, color_format, 30)
+config = rs.config() 
+pc = rs.pointcloud() 
+points = rs.points()
+config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
+config.enable_stream(rs.stream.color, 640, 480, rs.format.rgb8, 30)
+
+# Start streaming
 pipeline.start(config)
 
-# Get camera intrinsics
-profile = pipeline.get_active_profile()
-depth_profile = rs.video_stream_profile(profile.get_stream(rs.stream.depth))
-depth_intrinsics = depth_profile.get_intrinsics()
-w,h = depth_intrinsics.width, depth_intrinsics.height  
+try:
+    while True:
+        # Wait for a coherent pair of frames: depth and color
+        frames = pipeline.wait_for_frames()
+        depth_frame = frames.get_depth_frame()
+        color_frame = frames.get_color_frame()
 
-# Setup of cloudpoint 
-pc = rs.pointcloud() 
-decimate = rs.decimation_filter() 
-decimate.set_option(rs.option.filter_magnitude, 2) 
-colorizer = rs.colorizer() 
-filters = [rs.disparity_transform(), rs.spatial_filter(), rs.temporal_filter(), rs.disparity_transform(False)]
+        if not depth_frame or not color_frame:
+            continue
+
+        # Convert depth frame to numpy array
+        depth_image = np.asanyarray(depth_frame.get_data())
+
+        # Convert color frame to numpy array
+        color_image = np.asanyarray(color_frame.get_data())
+
+        # Create point cloud
+        
+        pc.map_to(color_frame)
+        points = pc.calculate(depth_frame)
+
+        # Extract point cloud data
+        vtx = np.asanyarray(points.get_vertices())
+        tex = np.asanyarray(points.get_texture_coordinates())
+
+        # Ensure the texture coordinates have the same number of dimensions as vertices
+        tex = np.expand_dims(tex, axis=1)
+
+        # Expand the vertex array to have the same number of dimensions as the texture coordinates
+        vtx_expanded = np.expand_dims(vtx, axis=1)
+
+        # Convert dtypes to a common dtype
+        vtx_expanded = vtx_expanded.astype(tex.dtype)
+
+        # Combine vertex and color information
+        colored_point_cloud = np.concatenate((vtx_expanded, tex), axis=1)
 
 
+        # Colorize the point cloud
+        colorized_point_cloud = np.zeros_like(colored_point_cloud)
+        for i in range(len(colorized_point_cloud)):
+            u, v = int(tex[i][0] * color_frame.width), int(tex[i][1] * color_frame.height)
+            colorized_point_cloud[i, 3:6] = color_image[v, u]
 
-# Setup for frames 
-color_profil =  rs.video_stream_profile(profile.get_stream(color_stream))
-color_intrinsics = color_profil.get_intrinsics() 
-color_w, color_h = color_intrinsics.width, color_intrinsics.height 
+        # Do something with the colorized point cloud data, like visualize it
 
-
-# Wait for frames 
-success,frames = pipeline.try_wait_for_frames(timeout_ms=0)
-
-if not success: 
-    print("No frames available") 
+finally:
+    # Stop streaming
     pipeline.stop()
-
-
-# frame set for color and depth stream
-depth_frame = frames.get_depth_frame().as_video_frame()
-color_frame = frames.first(color_stream).as_video_frame() 
-depth = decimate.process(depth_frame) 
-
-# Gonna grab some new intriniscs
-depth_intrinsics = rs.video_stream_profile(depth_frame.profile).get_intrinsics()
-
-w,h = depth_intrinsics.width, depth_intrinsics.height 
-
-color_image = np.asarray(color_frame.get_data()) 
-colorized_depth = colorizer.colorize(depth_frame) 
-depth_colormap = np.asanyarray(colorized_depth.get_data()) 
-
-# chanchg to color or depth frame 
-if True: 
-    mapped_frame, color_soruce = color_frame, color_image 
-else: 
-    mapped_frame, color_soruce = colorized_depth, depth_colormap
-
-
-#get points 
-points = pc.calculate(depth_frame) 
-pc.map_to(mapped_frame)
-""" 
-Pointcloud data to numpy array  
-vtx is the 3D coordinates of the points in the pointcloud 
-tex is the texture coordinates of the points in the pointcloud ¨
-"""
-vtx = np.asanyarray(points.get_vertices()).view(np.float32).reshape(-1,3) 
-tex = np.asanyarray(points.get_texture_coordinates()).view(np.float32).reshape(-1,2) 
-
-print(vtx) 
-print(tex)
-
-
-#print("Real-world coordinates (x, y, z):", Real_world_coordinates)   
-pipeline.stop()  
-
-# Release resources
-
-
-
-
-
