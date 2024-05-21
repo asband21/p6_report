@@ -85,7 +85,7 @@ def SetUp():
 #  -23.000 , 14.000 , 17.300 ,0.000 ,0.000 ,-0.350
 
 
-def  Update(path_settings,robot,program,target) :  
+def  Update(path_settings) :  
 
     # This does not fuction as instened but is used to update the path settings of the robot
     Update_pathsettings= {}   
@@ -133,18 +133,18 @@ def  Update(path_settings,robot,program,target) :
     
     test=path_settings.Update()  
     status = test[3] # status of the path intagerty
-    if status == 0: 
+    if status == 0:  
+        status_srt = "The path may have not been updated yet?"
         print("The path may have not been updated yet?")  
-    if status == 1:  
-        print("The path has been updated") 
-    if status == 2: 
-        print("The path is not valid")  
-       
-       
-         
-     
+    if status == 1:   
+        status_srt = "The path has been updated"
+        print("The path has been updated")  
 
-
+    if status == 2:  
+        status_srt = "The path is not valid"
+        print("The path is not valid")   
+    return status_srt
+       
 def COLLISION_check(collisions_bool,program): 
     """ 
     I'm not a reglious man, but if you runs this program on a actual robot without enabling the collision detection,  
@@ -273,6 +273,8 @@ def Main() :
        
        
         
+        
+
         # The camera pose is returned from the scaning mode 
 
         def replacement_camere_function():
@@ -289,6 +291,11 @@ def Main() :
             target.setPose(quaternion_2_pose(qw,qx,qy,qz)) # set the target to new coordinates given from the camera    
         
         
+
+        
+
+
+
         # The weld path is selected by the user, the user selects the weld seam by recording the TCP postion in the format of (x,y,z, roll,pitch,yaw) 
         #while True:  
         #    path_snipping_list=path_snipping(weld_path_selction(robot) ) # the path is snipped to the correct format 
@@ -300,8 +307,8 @@ def Main() :
     
         #This set the target in the simulation, this is where the location code have to inseret a X,Y,Z,Rx,Ry,Rz 
         
-        Update(path_settings,robot,program,target) # update the path and robot settings  
-
+        Update(path_settings) # update the path and robot settings  
+    
         input("Have you switched mode on the UR Robot to remote control?")
         ip = '192.168.0.2'
         port = 30001
@@ -319,7 +326,7 @@ def Main() :
        
 
         
-        Update(path_settings,robot,program,target) # update the path settings and robot settings
+        Update(path_settings) # update the path settings and robot settings
         # the last update and then the robot is ready to weld 
        
         # set the runMode to one that does not move the real robot
@@ -339,7 +346,7 @@ def Main() :
 
 
         # Setting  up target   
-        Update(path_settings,robot,program,target)
+        Update(path_settings)
         Weld_path = RDK.Item('WeldPathExternal',ITEM_TYPE_OBJECT) # get the weld path from the simulation
         robot_target = RDK.AddTarget('robot_target') # get the target from the simulation  
         weld_targe_external = RDK.AddTarget('Weld_target_external')#,Global_Frame)#,target) # making a target for the weld object and making the weldFrame{target} its reffrence frame
@@ -348,7 +355,9 @@ def Main() :
     
        
         #the joints from the data are extracted as one whole string and then converted to a list of floats 
-        Update(path_settings,robot,program,target)
+        Update(path_settings) 
+        test=program.setParam(instruction_numb) 
+        print(test)
         pose_str=program.setParam(instruction_numb)["Pose"] 
         tool_path_pose = re.findall(r'[-+]?\d*\.\d+|[-+]?\d+', pose_str)   
         joint_str=program.setParam(instruction_numb)["Joints"] 
@@ -380,7 +389,7 @@ def Main() :
         print("RunMode(%s)" % RDK.RunMode())
          
         # Run program 
-        Update(path_settings,robot,program,target) 
+        Update(path_settings) 
         
         
         while True: 
