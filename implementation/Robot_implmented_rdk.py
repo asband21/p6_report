@@ -73,7 +73,7 @@ def SetUp():
     robot.setJointLimits(joint_lower_limits,joint_upper_limits)# set the joint limits of the robot
    
     # Set the speed of the robot, simulation and enambe redering
-    #robot.setSpeed(1) # Set the speed of the robot to 100 mm/s
+   
     RDK.Render(True) # render the simulation
     RDK.setSimulationSpeed(1) # set the simulation speed t
     print("Simulations speed : %s " % RDK.SimulationSpeed())
@@ -187,7 +187,7 @@ def Collision_mapping(robot_target,weld_target_entrance,weld_target_exit) :
             
 
            # Will loop until a path is found
-            while(status_TO_Weld != "Failed" and status_TO_Home != "Failed"): 
+            while(status_TO_Weld == "Failed" or status_TO_Home == "Failed"): 
                 print("Path genreation was a %s Trying again"%status) 
                 RDK.PluginCommand("CollisionFreePlanner", "Calc") 
                 RDK.PluginCommand("CollisionFreePlanner", "Display", 1)  
@@ -410,8 +410,9 @@ def Main() :
         if procced_weld_obj_pose is None: 
             print("The weld object was not found")   
         else: 
-            qw,qx,qy,qz=matrix_to_quaternion(procced_weld_obj_pose) 
-            target_weldframe.setPose(quaternion_2_pose(qw,qx,qy,qz)) # set the target to new coordinates given from the camera    
+            #qw,qx,qy,qz=matrix_to_quaternion(procced_weld_obj_pose) 
+            #target_weldframe.setPose(quaternion_2_pose(qw,qx,qy,qz)) # set the target to new coordinates given from the camera     
+            target_weldframe.setPose(Mat.fromNumpy(procced_weld_obj_pose)) # set the target to new coordinates given from the camera   
         
         
         # The weld path is selected by the user, the user selects the weld seam by recording the TCP postion in the format of (x,y,z, roll,pitch,yaw)  
