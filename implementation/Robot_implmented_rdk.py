@@ -396,9 +396,12 @@ def Main() :
         # The camera pose is returned from the scaning mode 
         input("Are you ready?")
         def replacement_camere_function():
-            robot_Mimice_mode(robot)
+            #robot_Mimice_mode(robot)
             cam = Scaning_Mode(robot,camera)
-            pos = Mat.toNumpy(cam)
+            #Global_frame = RDK.Item('GlobalFrame', ITEM_TYPE_FRAME)
+            ##cam = Global_frame.PoseRel(camera)
+            pos = Mat.toNumpy(cam.inv() * Global_Frame.PoseAbs())
+            print(pos)
             pos[0, 3] = pos[0, 3]/1000
             pos[1, 3] = pos[1, 3]/1000
             pos[2, 3] = pos[2, 3]/1000
