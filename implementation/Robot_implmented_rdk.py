@@ -30,7 +30,6 @@ from robodk import *    # Import the RoboDK API constants
 from robodk.robomath import * 
 from decodeing import Parser 
 from functioncal_point_cloud_2 import weld_item_to_globel_transformaisen 
-#from PathSnapping import path_snipping
 import re  
 import math 
 import keyboard 
@@ -68,9 +67,9 @@ def SetUp():
     robot.setPoseTool(robot_tcp[0])   
  
     # set robot's joint limits
-    joint_lower_limits = [-165,-180,-165,-200,-270,-270] # set the lower joint limits of the robot
-    joint_upper_limits=[6.8,-61 ,-1,180,270,270] # set the upper joint limits of the robot
-    robot.setJointLimits(joint_lower_limits,joint_upper_limits)# set the joint limits of the robot
+    #joint_lower_limits = [-165,-180,-165,-200,-270,-270] # set the lower joint limits of the robot
+    #joint_upper_limits=[6.8,-61 ,-1,180,270,270] # set the upper joint limits of the robot
+    #robot.setJointLimits(joint_lower_limits,joint_upper_limits)# set the joint limits of the robot
    
     # Set the speed of the robot, simulation and enambe redering
    
@@ -164,41 +163,41 @@ def COLLISION_check(collisions_bool,program):
 
 def Collision_mapping(robot_target,weld_target_entrance,weld_target_exit) : 
     
-            RDK.PluginCommand("CollisionFreePlanner", "Display", 1) 
-            #RDK.Command('CollisionFreePlanner', 'IsUsingWeightedPoints', 0) # set the weighted points to false, using random joints
-            status = RDK.PluginCommand("CollisionFreePlanner", "Samples", 20) # number of samples to use for the path generation
-            print(status)   
+    RDK.PluginCommand("CollisionFreePlanner", "Display", 1) 
+    #RDK.Command('CollisionFreePlanner', 'IsUsingWeightedPoints', 0) # set the weighted points to false, using random joints
+    status = RDK.PluginCommand("CollisionFreePlanner", "Samples", 20) # number of samples to use for the path generation
+    print(status)   
 
-            status = RDK.PluginCommand("CollisionFreePlanner", "Edges",5)# number of edges to use for the path generation
-            print(status)
+    status = RDK.PluginCommand("CollisionFreePlanner", "Edges",5)# number of edges to use for the path generation
+    print(status)
 
-            status = RDK.Command("PathStepCollisionDeg", 4.0) # set the collision step to 4 degrees
-            print(status)  
+    status = RDK.Command("PathStepCollisionDeg", 4.0) # set the collision step to 4 degrees
+    print(status)  
 
-              
+        
 
-            # the name of the program that is going to be generated
-            TO_weld_name  = "TO_Weld" 
-            TO_home_name = "TO_Home"  
-            # the path generation is started 
-            RDK.PluginCommand("CollisionFreePlanner", "Calc") 
-            status_TO_Weld = RDK.PluginCommand("CollisionFreePlanner", f"Join={TO_weld_name}",f"{robot_target.Name()}|{ weld_target_entrance.Name()}") # join the targets ¨
-            status_TO_Home =RDK.PluginCommand("CollisionFreePlanner", f"Join={TO_home_name}",f"{weld_target_exit.Name()}|{ robot_target.Name() }")
-            
+    # the name of the program that is going to be generated
+    TO_weld_name  = "TO_Weld" 
+    TO_home_name = "TO_Home"  
+    # the path generation is started 
+    RDK.PluginCommand("CollisionFreePlanner", "Calc") 
+    status_TO_Weld = RDK.PluginCommand("CollisionFreePlanner", f"Join={TO_weld_name}",f"{robot_target.Name()}|{ weld_target_entrance.Name()}") # join the targets ¨
+    status_TO_Home =RDK.PluginCommand("CollisionFreePlanner", f"Join={TO_home_name}",f"{weld_target_exit.Name()}|{ robot_target.Name() }")
+    
 
-           # Will loop until a path is found
-            while(status_TO_Weld == "Failed" or status_TO_Home == "Failed"): 
-                print("Path genreation was a %s Trying again"%status) 
-                RDK.PluginCommand("CollisionFreePlanner", "Calc") 
-                RDK.PluginCommand("CollisionFreePlanner", "Display", 1)  
-                
-                status_TO_Weld = RDK.PluginCommand("CollisionFreePlanner", f"Join={TO_weld_name}",f"{robot_target.Name()}|{ weld_target_entrance.Name()}") # join the targets ¨
-                status_TO_Home =RDK.PluginCommand("CollisionFreePlanner", f"Join={TO_home_name}",f"{weld_target_exit.Name()}|{ robot_target.Name() }")
-                
-            # after the paht is found, the robot is place on the target, but is moved back to its start postion
-            
-            print("Collision_mapping was:  HOME: %s, WELD:%s "% (status_TO_Home,status_TO_Weld ) ) 
-            return TO_home_name,TO_weld_name
+    # Will loop until a path is found
+    while(status_TO_Weld == "Failed" or status_TO_Home == "Failed"): 
+        print("Path genreation was a Weld %s , Home %s Trying again"% (status_TO_Weld, status_TO_Home) ) 
+        RDK.PluginCommand("CollisionFreePlanner", "Calc") 
+        RDK.PluginCommand("CollisionFreePlanner", "Display", 1)  
+        
+        status_TO_Weld = RDK.PluginCommand("CollisionFreePlanner", f"Join={TO_weld_name}",f"{robot_target.Name()}|{ weld_target_entrance.Name()}") # join the targets ¨
+        status_TO_Home =RDK.PluginCommand("CollisionFreePlanner", f"Join={TO_home_name}",f"{weld_target_exit.Name()}|{ robot_target.Name() }")
+        
+    # after the paht is found, the robot is place on the target, but is moved back to its start postion
+    
+    print("Collision_mapping was:  HOME: %s, WELD:%s "% (status_TO_Home,status_TO_Weld ) ) 
+    return TO_home_name,TO_weld_name
 
 """
 def robot_Mimice_mode(robot) : 
@@ -225,27 +224,6 @@ def robot_Mimice_mode(robot):
     print(joints_in_degrees)
     robot.setJoints(joints_in_degrees)
 
-
-def robot_Mimice_mode_2(robot):
-    # Fetch fresh data
-    UR_Data.clear_cache()
-    all_data = UR_Data.parse(UR_Data._get_packge())
-    while 'JointData' not in all_data:
-        all_data = UR_Data.parse(UR_Data._get_packge())
-
-    #Convert joint data from radians to degrees
-    joints_in_degrees = [
-        math.degrees(all_data['JointData']['q_actual0']),
-        math.degrees(all_data['JointData']['q_actual1']),
-        math.degrees(all_data['JointData']['q_actual2']),
-        math.degrees(all_data['JointData']['q_actual3']),
-        math.degrees(all_data['JointData']['q_actual4']),
-        math.degrees(all_data['JointData']['q_actual5'])
-    ]
-    print(joints_in_degrees)
-    robot.setJoints(joints_in_degrees)
-
-
 def Scaning_Mode(robot,camera):  
     """  
     Fetches the data from the Decoding.py script and sets the simulations robot's joints to that of the real robot. With the robot correnctly placed the RDK.camera.Pose() is returned
@@ -271,7 +249,7 @@ def weld_path_selction(robot,program,target_weldframe):
     while True:  
         # record the TCP postion of the robot and which there is closed to the original weld path 
         
-        robot_Mimice_mode_2(robot) # update the robot joints to the real robot joints
+        robot_Mimice_mode(robot) # update the robot joints to the real robot joints
 
         distance = [[],[],[]]
         for i in range(program.InstructionCount()):    
@@ -299,22 +277,12 @@ def weld_path_selction(robot,program,target_weldframe):
         if keyboard.is_pressed('q'): 
             break  
  
-    robot_base = RDK.Item('UR10eBase',ITEM_TYPE_FRAME) # get the base of the robot from the simulation
-    Weld_path_matrix_relation_to_target = (robot_base.PoseAbs()).inv() * target_weldframe.PoseAbs() *  Mat.fromNumpy(np.array(
-            [[ 0.000000,     1.000000,    0.000000,   200.000000], 
-            [0.000000,     0.000000,     1.000000,   130.000000], 
-            [1.000000,     0.000000,     0.000000,     0.000000 ], 
-            [0.000000,     0.000000,     0.000000,     1.000000 ]]))
-    weld_path = RDK.Item('WeldPath',ITEM_TYPE_FRAME) # get the program "Main" from the simulation 
-    #weld_path.AddFrame("weld_path",target_weldframe) # set the pose of the weld path to the target pose 
-    weld_path.setPoseFrame(Weld_path_matrix_relation_to_target) # set the pose of the weld path to the target pose
-
-
-
+  
+    
     RDK.AddProgram("ModifiedPath") 
     modified_path_program = RDK.Item("ModifiedPath",ITEM_TYPE_PROGRAM) # get the program "Main" from the simulation
     modified_path_program.setRounding(1.0)  
-    modified_path_program.setPoseFrame(Weld_path_matrix_relation_to_target) 
+    modified_path_program.setPoseFrame(target_weldframe) 
     modified_path_program.setSpeed(10000)  
     modified_path_program.setPoseTool(robot.PoseTool()) 
 
@@ -338,7 +306,7 @@ def weld_path_selction(robot,program,target_weldframe):
     print(max_count_of_instructions)
     print(instruction_exit_joints) 
     print(modified_path_program.InstructionCount())
-    return instruction_entrance_joints,instruction_exit_joints, modified_path_program,weld_path
+    return instruction_entrance_joints,instruction_exit_joints, modified_path_program
 
 def matrix_to_quaternion(matrix):
     # Ensure the matrix is a numpy array
@@ -392,7 +360,7 @@ def Main() :
        
         
         
-
+        """  
         # The camera pose is returned from the scaning mode 
         input("Are you ready?")
         def replacement_camere_function():
@@ -413,12 +381,12 @@ def Main() :
             #qw,qx,qy,qz=matrix_to_quaternion(procced_weld_obj_pose) 
             #target_weldframe.setPose(quaternion_2_pose(qw,qx,qy,qz)) # set the target to new coordinates given from the camera     
             target_weldframe.setPose(Mat.fromNumpy(procced_weld_obj_pose)) # set the target to new coordinates given from the camera   
-        
+        """
         
         # The weld path is selected by the user, the user selects the weld seam by recording the TCP postion in the format of (x,y,z, roll,pitch,yaw)  
 
         Update(path_settings) # update the path and robot settings
-        instruction_entrance_joints,instruction_exit_joints,modified_path_program,Weld_path_matrix_relation_to_target=weld_path_selction(robot,program,target_weldframe)
+        instruction_entrance_joints,instruction_exit_joints,modified_path_program=weld_path_selction(robot,program,target_weldframe)
         print(instruction_entrance_joints) 
         print("+++++++++++++++++++++++++++++++++")
         print(instruction_exit_joints) 
@@ -433,26 +401,27 @@ def Main() :
       
         # set the runMode to one that does not move the real robot
         RDK.setRunMode(4) # int = RUNMODE RUNMODE_SIMULATE=1 performs the simulation moving the robot (default) RUNMODE_QUICKVALIDATE=2 performs a quick check to validate the robot movements RUNMODE_MAKE_ROBOTPROG=3 makes the robot program RUNMODE_RUN_REAL=4 moves the real robot is it is connected
-       
-
+        WeldPathExternal = RDK.Item('WeldPathExternal',ITEM_TYPE_OBJECT) # get the weld path from the simulation
         robot_target = RDK.AddTarget('robot_target') # get the target from the simulation   
-         # set the target to the robot start postions
+        # set the target to the robot start postions
         robot_target.setPose(robot.Pose()) # set the robot target to the robot pose   
     
-        weld_target_entrance = RDK.AddTarget('weld_target_entrance_lllll')#,Weld_path_matrix_relation_to_target)# making a target for the weld object and making the weldFrame{target} its reffrence frame
-        gg = robot.setJoints([np.array(instruction_entrance_joints)[0][0],np.array(instruction_entrance_joints)[0][1],np.array(instruction_entrance_joints)[0][2],np.array(instruction_entrance_joints)[0][3],np.array(instruction_entrance_joints)[0][4],np.array(instruction_entrance_joints)[0][5]]) # set the joints of the robot to the joints of the program
-        weld_target_entrance.setPoseAbs(RDK.Item('Torch').PoseAbs())# ser the weld target to the robot pose
+        weld_target_entrance = RDK.AddTarget('weld_target_entrance')#,Weld_path_matrix_relation_to_target)# making a target for the weld object and making the weldFrame{target} its reffrence frame 
+        weld_target_entrance.setParent(WeldPathExternal)
+        robot.setJoints([np.array(instruction_entrance_joints)[0][0],np.array(instruction_entrance_joints)[0][1],np.array(instruction_entrance_joints)[0][2],np.array(instruction_entrance_joints)[0][3],np.array(instruction_entrance_joints)[0][4],np.array(instruction_entrance_joints)[0][5]]) # set the joints of the robot to the joints of the program
+        weld_target_entrance.setPose(robot.Pose())# ser the weld target to the robot pose
         #weld_target_entrance.setPoseAbs((robot.Childs()[0]).PoseAbs())# ser the weld target to the robot pose
 
-        print(robot.Pose())
-
-        weld_target_exit = RDK.AddTarget('Weld_target_exit_kkhgfg')# Weld_path_matrix_relation_to_target) # making a target for the weld object and making the weldFrame{target} its reffrence frame
+        weld_target_exit = RDK.AddTarget('Weld_target_exit')# Weld_path_matrix_relation_to_target) # making a target for the weld object and making the weldFrame{target} its reffrence frame 
+        weld_target_exit.setParent(WeldPathExternal)
         robot.setJoints([np.array(instruction_exit_joints)[0][0],np.array(instruction_exit_joints)[0][1],np.array(instruction_exit_joints)[0][2],np.array(instruction_exit_joints)[0][3],np.array(instruction_exit_joints)[0][4],np.array(instruction_exit_joints)[0][5]]) # set the joints of the robot to the joints of the program
-        weld_target_exit.setPoseAbs(RDK.Item('Torch').PoseAbs())# ser the weld target to the robot pose 
-        print(RDK.Itme('Torch').TCP().PoseAbs())
+        weld_target_exit.setPose(robot.Pose())# ser the weld target to the robot pose 
+        
+        robot.setPose(robot_target.Pose()) # set the robot pose to the robot target pose
+        # The program will know being its collision detection and path generation    
+        input("Collsions dections and path generation is starting...") 
 
-        # The program will know being its collision detection and path generation   
-
+        """ 
         TO_home_name,TO_weld_name=Collision_mapping(robot_target,weld_target_entrance,weld_target_exit) # the collision mapping of the robot
         TO_home_program = RDK.Item(TO_home_name,ITEM_TYPE_PROGRAM) # get the program "TO_home" from the simulation
         TO_weld_program = RDK.Item(TO_weld_name,ITEM_TYPE_PROGRAM) # get the program "TO_weld" from the simulation
@@ -460,7 +429,7 @@ def Main() :
         TO_weld_program.setRunType(PROGRAM_RUN_ON_ROBOT)  
         modified_path_program.setRunType(PROGRAM_RUN_ON_ROBOT)
         robot.setJoints(robot_target.Joints()) # set the joints of the robot to the joints of the target
-
+       
         # set the runMode to one that does not move the real robot 
         RDK.setRunMode(RUNMODE_RUN_ROBOT) # int = RUNMODE RUNMODE_SIMULATE=1 performs the simulation moving the robot (default) RUNMODE_QUICKVALIDATE=2 performs a quick check to validate the robot movements RUNMODE_MAKE_ROBOTPROG=3 makes the robot program RUNMODE_RUN_REAL=4 moves the real robot is it is connected
         
@@ -478,7 +447,7 @@ def Main() :
             modified_path_program.WaitFinished()
             TO_home_program.RunProgram() # move the robot to the target 
             TO_home_program.WaitFinished()  
-            
+             """
             
            
         """ 

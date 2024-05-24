@@ -118,7 +118,7 @@ try:
             #writer.writerow([" Joint values", "", robot_joints[0],robot_joints[1],robot_joints[2],robot_joints[3],robot_joints[4],robot_joints[5]]) 
             input("Press Enter to continue...") 
 
-            if True: 
+            if False: 
                 oneTOtwo_name, twoTOThreee_name, threeTOone_name=Collision_mapping()
                 oneTOtwo_program = RDK.Item(oneTOtwo_name,ITEM_TYPE_PROGRAM) # get the program "TO_home" from the simulation
                 twoTOThreee_program = RDK.Item(twoTOThreee_name,ITEM_TYPE_PROGRAM) # get the program "TO_weld" from the simulation
