@@ -411,7 +411,7 @@ void print_transformation_matrix(Eigen::Matrix4f transformation)
 
 int main(int argc, char** argv)
 {
-	char *sti_ref = "./gig_AAUTest97_ransed_lille.csv";
+	char *sti_ref = "./csv/gig_AAUTest97_ransed_lille.csv";
 	//char *sti_scan = "./data/data_1/scan.csv";
 	//char *sti_scan = "./data/implementation_UDEN_INVERS/all_transformed_vertices.csv";
 	char *sti_scan = "./data/implementation_OPPE/all_transformed_vertices.csv";

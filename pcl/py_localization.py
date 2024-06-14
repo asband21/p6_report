@@ -61,12 +61,12 @@ def load_csv_to_numpy(filename):
 
 if __name__ == "__main__":
     #data
-    filename_cad = 'reference_pointcloud.csv'
+    filename_cad = './csv/reference_pointcloud.csv'
     cad = load_csv_to_numpy(filename_cad)
     cad = generate_random_array(20000000)
     print(cad)
     
-    filename_scan = 'scan_RT_pointcloud_w_duplicates_3.csv'
+    filename_scan = './csv/scan_RT_pointcloud_w_duplicates_3.csv'
     scan = load_csv_to_numpy(filename_scan)
     print(scan)
 
